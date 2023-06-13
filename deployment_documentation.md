@@ -40,14 +40,14 @@ The docker image needed for hosting your own VDL server can be found at ghcr.io/
 | NODE_SECRETS_DIR_INIT | |
 | NODE_SECRETS_DIR | |
 | NODE_STATE_PATH | |
-| NODE_PERSISTENCE_MODE | \[true|false\] enables persistence mode. |
+| NODE_PERSISTENCE_MODE | \[true\|false\] enables persistence mode. |
 | NODE_PORT_PER_CORE_MODE | |
-| NODE_SCRIPT_SIGN_MODE | \[true|false\] If set to true, only signed scripts can be executed. |
+| NODE_SCRIPT_SIGN_MODE | \[true\|false\] If set to true, only signed scripts can be executed. |
 | NODE_SCRIPT_SIGN_KEYS | Filenames script approver public keys. (NB: no chars from $IFS, such as spaces, are allowed in the filenames) |
-| NODE_TCP_KEEPALIVE_COUNT
-| NODE_TCP_KEEPALIVE_IDLE
-| NODE_TCP_KEEPALIVE_INTERVAL
-| NODE_HEARTBEAT_PERIOD
+| NODE_TCP_KEEPALIVE_COUNT | |
+| NODE_TCP_KEEPALIVE_IDLE | |
+| NODE_TCP_KEEPALIVE_INTERVAL | |
+| NODE_HEARTBEAT_PERIOD | |
 | NODE_HEARTBEAT_TIMEOUT_DELTA
 | NODE_LOG_LEVEL | Sets the log level \[debug etc.\]|
 | NODE_AUX_FLAGS | utility flag to add any flags not covered by the above. |
@@ -57,15 +57,15 @@ These values can be passed either by setting their environment variables or as c
 ## Deployment via Helm chart (standalone)
 For ease of use, a Helm chart can be used to setup a complete VDL node on an existing Kubernetes cluster. This helm chart will deploy a stateful set which manages the VDL node, the services for connecting to it, a Kubernetes Secret for storing key material, and a persistent volume claim for storage. Optionally, a VPN client sidecar container will be deployed in the pod containing the VDL node, which can be used to connect the VDL node to any already existing OpenVPN server. 
 
-For now, the Helm chart is not being hosted on any chart repository. Contact RosemanLabs if you would wish to use it. A proper repository will be launched in due time.
+First, add the RosemanLabs helm chart repository (replace REPO_NAME with any name you want):
 
-Once you have obtained the chart .tgz file, you can deploy it by running: 
+`helm repo add REPO_NAME https://helm.rosemancloud.com`
 
-'''
-helm install CHART_NAME \</path/to/chart.tgz\> 
-'''
+Once you have added the repository, you can deploy it by running (replace CHART_NAME with any chart name you want, REPO_NAME with the previously chosen repo name): 
 
-The following values should be specified or can be overridden:
+`helm install CHART_NAME REPO_NAME/vdl`
+
+During install, the following values should be specified or can be overridden:
 | Name | Required | Default | Explanation |
 | ----------- | ----------- | ----------- | ----------- |
 | image.repository | | ghcr.io/rosemanlabs/vdl | Repository to pull the VDL image from |
