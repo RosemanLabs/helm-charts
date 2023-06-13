@@ -17,10 +17,13 @@ The docker image needed for hosting your own VDL server can be found at ghcr.io/
 
 ## Required environmental variables:
 | Name | Description |
+| ----------- | ----------- |
 | NODE_NR | Either 0, 1 or 2, determines the order in which each node should be deployed. First node 2, then 1, then 0.|
 | NODE_PEER_A_HOSTNAME | Hostname or IP address of peer a. Node 0 uses this to connect to Node 1. |
 | NODE_PEER_B_HOSTNAME | Hostname or IP address of peer b. Node 0 and Node 1 use this to connect to node 2 |
 ## Optional environmental variables:
+| Name | Description |
+| ----------- | ----------- |
 | NODE_PORT_OFFSET_MODE | if set to 1, will add the node number to the port numbers; can be used for single-machine deployments |
 | NODE_CORES | determine the number of cores the node will use. If <= 0, then it will use all available cores |
 | NODE_MEMORY | determine the amount of memory the node will use. If unset, then will use all available memory | 
