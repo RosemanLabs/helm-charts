@@ -7,25 +7,36 @@ die(){
   exit 1
 }
 
-helmx (){
-	r=0
-	set -x
-	$@ || r=1
-	{ set +x; } 2>&-
-	return $r
+help() {
+  # Display help message
+  echo "deploy_single_node.sh is designed to simplify deployment of a single VDL node"
+  echo 
+  echo "Syntax: ./deploy_single_node.sh [-h] [-c </path/to/vpnconfig.ovpn>][-p </path/to/chart.tgz>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+  echo "Positional arguments:"
+  echo "<namespace>                     Kubernetes namespace to deploy the chart in"
+  echo "</path/to/value/overwrite/file> Path to the file containing all values that need to be overwritten, except for the secrets"
+  echo "<path/to/secrets/dir/>          Path to the folder containing all keys for overwriting all .Values.secrets. values"
+  echo "options:"
+  echo "  -h                            Print this help message"
+  echo "  -c  </path/to/vpnconfig.ovpn> Sets the config file path"
+  echo "  -p  </path/to/chart.tgz>      Use a local .tgz chart instead of the vdl chart of the rosemanlabs repo"
+  echo "  -f                            Delete the namespace before trying to install the chart"
 }
 
 local_chart=false
 delete_namespace=false
 
-while getopts 'fp:c:' opt; do
+while getopts 'hfp:c:' opt; do
   case "$opt" in
+    h)
+      help
+      exit ;;
     f)
       delete_namespace=true
       ;;
     p)
       local_chart=true
-	  chartname=$OPTARG
+	    chartname=$OPTARG
       ;;
     c)
       vpn_config_file=$OPTARG
@@ -56,7 +67,8 @@ fi
 namespace=$1
 
 if $delete_namespace; then
-  ! kubectl delete namespace "$namespace"
+  # Add || true to not fail if namespace does not exist  
+  kubectl delete namespace "$namespace" || true
 fi
 
 if $local_chart; then
@@ -68,7 +80,7 @@ if $local_chart; then
 	echo "Chart successfully created at $chartname"
 else
 	# Exctract repo name pointing to https://helm.rosemancloud.com and append /vdl to get the chart name
-	chartname="$(helm repo list | sed -n -e 's/\thttps:\/\/helm\.rosemancloud\.com/\/vdl/p')"
+	chartname="$(helm repo list | sed -n -e 's/\thttps:\/\/helm\.rosemancloud\.com.*/\/vdl/p')"
 fi
 
 overwritefile=$2
@@ -107,16 +119,16 @@ base64 -w0 < "$secrets_dir/server$node.key" > "$tmpdir/server$node.key.b64"
 base64 -w0 < "$secrets_dir/server$node.sk.b64" > "$tmpdir/server$node.sk.b64.b64"
 
 # Construct install command (add necesairy key material into helm values)
-install_command=(helm upgrade --install vdl "$chartname" --create-namespace --namespace "$namespace" --values "$overwritefile" )
-install_command+=( --set-file "secrets.selfsignedcaCrt=$tmpdir/selfsignedca.crt.b64" )
-install_command+=( --set-file "secrets.licenseKey=$tmpdir/license.key.b64" )
-install_command+=( --set-file "secrets.httpd${node}Crt=$tmpdir/httpd$node.crt.b64" )
-install_command+=( --set-file "secrets.httpd${node}Key=$tmpdir/httpd$node.key.b64" )
-install_command+=( --set-file "secrets.server${peer_a}Crt=$tmpdir/server$peer_a.crt.b64" )
-install_command+=( --set-file "secrets.server${peer_b}Crt=$tmpdir/server$peer_b.crt.b64" )
-install_command+=( --set-file "secrets.server${node}Crt=$tmpdir/server$node.crt.b64" )
-install_command+=( --set-file "secrets.server${node}Key=$tmpdir/server$node.key.b64" )
-install_command+=( --set-file "secrets.server${node}SkB64=$tmpdir/server$node.sk.b64.b64" )
+install_params=("$chartname" --create-namespace --namespace "$namespace" --values "$overwritefile" )
+install_params+=( --set-file "secrets.selfsignedcaCrt=$tmpdir/selfsignedca.crt.b64" )
+install_params+=( --set-file "secrets.licenseKey=$tmpdir/license.key.b64" )
+install_params+=( --set-file "secrets.httpd${node}Crt=$tmpdir/httpd$node.crt.b64" )
+install_params+=( --set-file "secrets.httpd${node}Key=$tmpdir/httpd$node.key.b64" )
+install_params+=( --set-file "secrets.server${peer_a}Crt=$tmpdir/server$peer_a.crt.b64" )
+install_params+=( --set-file "secrets.server${peer_b}Crt=$tmpdir/server$peer_b.crt.b64" )
+install_params+=( --set-file "secrets.server${node}Crt=$tmpdir/server$node.crt.b64" )
+install_params+=( --set-file "secrets.server${node}Key=$tmpdir/server$node.key.b64" )
+install_params+=( --set-file "secrets.server${node}SkB64=$tmpdir/server$node.sk.b64.b64" )
 
 # || true is needed, otherwise -e causes an error if 0 is returned by grep
 num_approvers=$(grep -oP '(?<=scriptSignMode: \").' "$overwritefile") || true
@@ -124,13 +136,13 @@ if [[ $num_approvers -gt 0 ]]; then
 	base64 -w0 < "$secrets_dir/sign0.pk.b64" > "$tmpdir/sign0.pk.b64.b64"
 	base64 -w0 < "$secrets_dir/sign1.pk.b64" > "$tmpdir/sign1.pk.b64.b64"
 
-	install_command+=( --set-file "secrets.sign0PkB64=$tmpdir/sign0.pk.b64.b64" )
-	install_command+=( --set-file "secrets.sign1PkB64=$tmpdir/sign1.pk.b64.b64" )
+	install_params+=( --set-file "secrets.sign0PkB64=$tmpdir/sign0.pk.b64.b64" )
+	install_params+=( --set-file "secrets.sign1PkB64=$tmpdir/sign1.pk.b64.b64" )
 fi
 
 # set +e because grep exits with an error if vpnEnabled: false (which is what we test here for)
 set +e
-$(grep -qP '(?<=vpnEnabled: )true' $overwritefile)
+grep -qP '(?<=vpnEnabled: )true' "$overwritefile"
 # Store exit status in vpn_enabled
 vpn_enabled=$?
 set -e
@@ -138,11 +150,10 @@ set -e
 # test to see if exit status of $vpn_enabled is 0
 if [[ "$vpn_enabled" -eq "0" ]]; then
 	base64 -w0 < "$vpn_config_file" > "$tmpdir/vpnconf.ovpn.b64"
-
-	install_command+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
+	install_params+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
 fi
 set -x
-${install_command[@]}
+helm upgrade --install vdl "${install_params[@]}"
 set +x
 #clean up temporary directory with helm secrets
 rm -r "$tmpdir"
