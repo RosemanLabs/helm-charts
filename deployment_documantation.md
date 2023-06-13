@@ -51,7 +51,7 @@ The docker image needed for hosting your own VDL server can be found at ghcr.io/
 
 These values can be passed either by setting their environment variables or as command line arguments. (TODO check if this is true.)
 
-## Deployment via Helm chart
+## Deployment via Helm chart (standalone)
 For ease of use, a Helm chart can be used to setup a complete VDL node on an existing Kubernetes cluster. This helm chart will deploy a stateful set which manages the VDL node, the services for connecting to it, a Kubernetes Secret for storing key material, and a persistent volume claim for storage. Optionally, a VPN client sidecar container will be deployed in the pod containing the VDL node, which can be used to connect the VDL node to any already existing OpenVPN server. 
 
 For now, the Helm chart is not being hosted on any chart repository. Contact RosemanLabs if you would wish to use it. A proper repository will be launched in due time.
@@ -105,12 +105,12 @@ The following values should be specified or can be overridden:
 | secrets.server2Key | yes | | |
 | secrets.server2Pk | yes | | |
 | secrets.server2SkB64 | yes | | |
-| secrets.sign0PkB64 | yes | | |
-| secrets.sign1PkB64 | yes | | |
-| secrets.sign2PkB64 | yes | | |
-| secrets.sign0Pk | yes | | |
-| secrets.sign1Pk | yes | | |
-| secrets.sign2Pk | yes | | |
+| secrets.sign0PkB64 | if scriptSignMode has been set | |  |
+| secrets.sign1PkB64 | if scriptSignMode has been set | | |
+| secrets.sign2PkB64 | if scriptSignMode has been set | | |
+| secrets.sign0Pk | if scriptSignMode has been set | | |
+| secrets.sign1Pk | if scriptSignMode has been set | | |
+| secrets.sign2Pk | if scriptSignMode has been set | | |
 | podAnnotations | | {} | sets extra pod annotations |
 | securityContext | | {} | sets the securityContext |
 | serviceN2n.type | | LoadBalancer | sets the type of the service for node to node communication. |
@@ -138,7 +138,7 @@ This Helm chart does have quite a few required values. We recommend the followin
 
 ```yaml
 imageCredentials:
-  username: "USESRNAME"
+  username: "USERNAME"
   password: "PASSWORD"
 core:
   nodeNr: "0"
@@ -161,5 +161,9 @@ This can be used with the `--values overwritefile.yaml` flag of the `helm instal
 
 For setting the all of the secrets values and the vpnConfigFile, we reccomend using the `--set-file secrets.selfsignedcaCrt=/Path/to/selfsignedca.crt` flag with your `helm install` command.
 
-
+## Deployment via Helm Chart (deploy_single_node.sh script)
+To easily deploy a single VDL node, the `deploy_single_node.sh` script is provided. With these steps, you can setup your own VDL node:
+1. Acquire the needed key material (if needed, use the scripts in the cranmera repository to generate those) and store all in a single directory
+2. Create your overwrite file, a template can be found above. Be sure to set the right values.
+3. Run the `deploy_single_node.sh` script with the following required arguments: <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/> where <namespace> should be the Kubernetes namespace that should be used, </path/to/value/overwrite/file> should be the location of the previously created overwrite file and <path/to/secrets/dir/> should be the path to the directory that stores the generated key material.
 

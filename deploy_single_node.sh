@@ -42,6 +42,7 @@ while getopts 'fp:c:' opt; do
   esac
 done
 
+# Because there are optional arguments, use OPTIND for indexing required commands (see getopts documentation)
 if [ $(( $# - $OPTIND )) -lt 2 ]; then
  die "usage: $0 [-c </path/to/vpnconfig.ovpn>][-f][-p] <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
 fi
@@ -87,7 +88,7 @@ fi
 
 node=$(grep -oP '(?<=nodeNr: \").' $overwritefile)
 if [[ !($node == "0" || $node == "1" || $node == "2") ]]; then
-	die "$node is not a valid node numer, either 0, 1, or 2"
+	die "nodeNr: $node in $overwritefile is not a valid node numer, should be either 0, 1, or 2"
 fi
 
 # || true is needed, otherwise -e causes an error if 0 is returned by expr()
