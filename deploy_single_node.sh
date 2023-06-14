@@ -80,7 +80,7 @@ if $local_chart; then
 	echo "Chart successfully created at $chartname"
 else
 	# Exctract repo name pointing to https://helm.rosemancloud.com and append /vdl to get the chart name
-	chartname="$(helm repo list | sed -n -e 's/\thttps:\/\/helm\.rosemancloud\.com.*/\/vdl/p')"
+	chartname="$(helm repo list | sed -rne 's/[ \t]+https:\/\/helm\.rosemancloud\.com.*/\/vdl/p')"
 fi
 
 overwritefile=$2
