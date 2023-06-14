@@ -92,7 +92,7 @@ imageCredentials:
   username: "USERNAME"
   password: "PASSWORD"
 core:
-  nodeNr: "0"
+  nodeNr: "2"
   peerAHostname: "HOSTNAME"
   peerBHostname: "HOSTNAME"
   peerAPort: "6000"
