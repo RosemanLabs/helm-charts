@@ -5,7 +5,7 @@ Due to the large number of values that need to be overwritten, we recomend deplo
 
 With these steps, you can setup your own VDL node:
 
-1. Add the Roseman Labs helm chart repository (replace REPO_NAME with any name you want): `helm repo add REPO_NAME https://helm.rosemancloud.com`.
+1. Add the Roseman Labs helm chart repository (replace `REPO_NAME` with any name you want): `helm repo add REPO_NAME https://helm.rosemancloud.com`.
 2. Receive from Roseman Labs the credentials needed for pulling the docker image (which will take place inside the helm chart).
 3. Acquire the needed key material (discuss with your Roseman Labs contact on how to do this) and store all in a single directory.
 4. Create your override file based on the template found at the end of this README.
