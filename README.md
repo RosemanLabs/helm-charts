@@ -1,15 +1,44 @@
 # Deploying your own VDL server using helm
 For ease of use, a Helm chart can be used to setup a complete VDL node on an existing Kubernetes cluster. This helm chart will deploy a StatefulSet which manages the VDL node, the services for connecting to it, a Kubernetes Secret for storing key material, and a persistent volume claim for storage. Optionally, a VPN client sidecar container will be deployed in the pod containing the VDL node, which can be used to connect the VDL node to any already existing OpenVPN server.
 
-Due to the large number of values that need to be overwritten, we recomend deploying it by running the `deploy_single_node.sh` script and not using helm command directly.
+Due to the large number of values that need to be overwritten, we recomend deploying it by running the `deploy_single_node.sh` script and not using helm commands directly.
 
-With these steps, you can setup your own VDL node:
+With the following steps, you can setup your own VDL node:
 
 1. Add the Roseman Labs helm chart repository (replace `REPO_NAME` with any name you want): `helm repo add REPO_NAME https://helm.rosemancloud.com`.
-2. Receive from Roseman Labs the credentials needed for pulling the docker image (which will take place inside the helm chart).
-3. Acquire the needed key material (discuss with your Roseman Labs contact on how to do this) and store all in a single directory.
-4. Create your override file based on the template found at the end of this README.
-5. Run the `deploy_single_node.sh` script with the following required arguments: `<namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>` where `<namespace>` should be the Kubernetes namespace that should be used, `</path/to/value/overwrite/file>` should be the location of the previously created overwrite file and `<path/to/secrets/dir/>` should be the path to the directory that stores the generated key material.
+2. Receive from Roseman Labs the credentials needed for pulling the docker image (which will be used by the k8s/helm server).
+3. Acquire the needed key material (discuss with your Roseman Labs contact on how to do this) and store it all in a single directory.
+4. Create your override file based on the following template (see appendix 1 for details on the parameters):
+
+```yaml
+imageCredentials:
+  username: "USERNAME"
+  password: "PASSWORD"
+core:
+  nodeNr: "2"
+  peerAHostname: "HOSTNAME"
+  peerBHostname: "HOSTNAME"
+  peerAPort: "6000"
+  peerBPort: "6000"
+pvc:
+  storageClassName: "standard"
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+  requests:
+    cpu: 1
+    memory: 2Gi
+```
+5. Run the `deploy_single_node.sh` script with the following format:
+```sh
+./deploy_single_node.sh <namespace> <override_file> <override_secrets_dir>
+```
+  - `<namespace>` should be the Kubernetes namespace that to be used
+  - `<override_file>` should be the location of the previously created override file
+  - `<override_secrets_dir>` should be the path to the directory that stores the generated (override) key material
+
+# appendix I: values you can configure in the helm chart
 
 During install, the following values should be specified or can be overridden:
 | Name | Required | Default | Explanation |
@@ -83,32 +112,8 @@ During install, the following values should be specified or can be overridden:
 | vpnEnabled | | false | if set to true, a VPN-client sidecar is created for connecting the VDL node to an existing OpenVPN-server |
 | vpnConfigFile | | | if vpnEnabled, sets the contents of the .ovpn file used for connecting to the vpn server. |
 
-## Template
 
-Below, a template overwrite file is given which you can use with the deploy_single_node.sh script: 
-
-```yaml
-imageCredentials:
-  username: "USERNAME"
-  password: "PASSWORD"
-core:
-  nodeNr: "2"
-  peerAHostname: "HOSTNAME"
-  peerBHostname: "HOSTNAME"
-  peerAPort: "6000"
-  peerBPort: "6000"
-pvc:
-  storageClassName: "standard"
-resources:
-  limits:
-    cpu: 1
-    memory: 2Gi
-  requests:
-    cpu: 1
-    memory: 2Gi
-```
-
-# appendix: all values recognized by docker image
+# appendix II: values recognized by docker image
 
 The docker image recognizes the following parameters. Not all of these values can be set via Helm; if you need to change those, you need to create a fork of our chart.
 
