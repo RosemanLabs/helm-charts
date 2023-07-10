@@ -100,7 +100,7 @@ During install, the following values should be specified or can be overridden:
 | ingress.enabled | | false | TODO add explanation for the ingress |
 | ingress.className | |"" | |
 | annotations | | {} | |
-| hosts| | | |
+| hosts | | | |
 | tls | | [] | |
 | resources.limits.cpu | | 1 | sets cpu resource limits in kubernetes |
 | resources.limits.memory | | 1024Mi | sets memory resource limits in kubernetes |
