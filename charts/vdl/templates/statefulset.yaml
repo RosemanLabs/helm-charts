@@ -42,6 +42,10 @@ spec:
             items:
               - key: filebeat.yml
                 path: filebeat.yml
+        - name: filebeat-certs
+          secret:
+            secretName: {{ .Chart.Name }}-filebeat-tls-secrets
+            optional: false
         {{- end }}
         {{- if .Values.vpnEnabled }}
         - name: ephemeral
@@ -119,6 +123,8 @@ spec:
             - name: filebeat-config
               mountPath: /usr/share/filebeat/filebeat.yml
               subPath: filebeat.yml
+            - name: filebeat-certs
+              mountPath: /etc/certs
           resources:
             limits:
               memory: 100Mi # TODO: check if this is reasonable

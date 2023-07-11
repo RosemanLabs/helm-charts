@@ -144,3 +144,10 @@ elasticIndex: onpremise
 
 # Host name or IP address of the logstash server that the filebeat should connect to
 logstashHost:
+
+# 
+loggingCaCrt:
+
+filebeatCrt:
+
+filebeatKey:

@@ -11,12 +11,11 @@ data:
           id: {{ .Chart.Name }}-node-logs
           paths:
             - /var/log/vdl/*.log
-    # cloud.id: {{ required ".Values.elasticCloudID is required when .Values.sendLogs is true" .Values.elasticCloudID | quote }}
-    # cloud.auth: {{ required ".Values.elasticCloudAuth is required when .Values.sendLogs is true" .Values.elasticCloudAuth | quote }}
-    # output.elasticsearch.index: "{{ required ".Values.elasticIndex is required when .Values.sendLogs is true" .Values.elasticIndex }}-%{[agent.version]}"
-    # output.elasticsearch.allow_older_versions: true
     output.logstash:
       hosts: ["{{ .Values.logstashHost}}"]
+      ssl.certificate_authorities: ["/etc/certs/logging-ca.crt"]
+      ssl.certificate: "/etc/certs/filebeat-client.crt"
+      ssl.key: "/etc/certs/filebeat-client.key"
     setup.template.name: "{{ .Values.elasticIndex }}"
     setup.template.pattern: "{{ .Values.elasticIndex }}-%{[agent.version]}"
 {{- end }}
