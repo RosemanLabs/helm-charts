@@ -1,0 +1,17 @@
+{{- if .Values.serviceCrandas.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vdl.fullname" . }}-crandas
+  labels:
+    {{- include "vdl.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.serviceCrandas.type }}
+  ports:
+    - port: {{ .Values.serviceCrandas.exposePort }}
+      targetPort: 9820
+      protocol: TCP
+      name: crandas
+  selector:
+    {{- include "vdl.selectorLabels" . | nindent 4 }}
+{{- end }}
