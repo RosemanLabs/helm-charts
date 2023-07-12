@@ -153,9 +153,9 @@ if [[ "$vpn_enabled" -eq "0" ]]; then
 	install_params+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
 fi
 
-# set +e because grep exits with an error if sendLogs: false (which is what we test here for)
+# set +e because grep exits with an error if loggingEnabled: false (which is what we test here for)
 set +e
-grep -qP '(?<=sendLogs: )true' "$overwritefile"
+grep -qP '(?<=loggingEnabled: )true' "$overwritefile"
 # Store exit status in vpn_enabled
 send_logs_enabled=$?
 set -e

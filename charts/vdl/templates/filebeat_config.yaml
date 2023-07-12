@@ -1,4 +1,4 @@
-{{- if .Values.sendLogs -}}
+{{- if .Values.loggingEnabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -33,7 +33,7 @@ spec:
             secretName: {{ .Chart.Name }}-secret-vdl
             defaultMode: 420
             optional: false
-        {{- if .Values.sendLogs }}
+        {{- if .Values.loggingEnabled }}
         - name: vdl-logs
           emptyDir: {} # TODO: add either PVC or sizeLimit
         - name: filebeat-config
@@ -67,7 +67,7 @@ spec:
               mountPath: /app/data
             - name: secrets
               mountPath: /app/secrets
-          {{- if .Values.sendLogs }}
+          {{- if .Values.loggingEnabled }}
             - name: vdl-logs
               mountPath: /var/log/vdl/
           command: [ "/bin/bash", "-c", "./runner.sh 2>&1 | tee /var/log/vdl/test.log" ]
@@ -113,7 +113,7 @@ spec:
             failureThreshold: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-        {{- if .Values.sendLogs }}
+        {{- if .Values.loggingEnabled }}
         - name: vdl-log-collector
           image: docker.elastic.co/beats/filebeat:8.8.1
           imagePullPolicy: {{ .Values.image.pullPolicy }}

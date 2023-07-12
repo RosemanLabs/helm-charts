@@ -58,6 +58,35 @@ secrets:
   sign1Pk:
   sign2Pk:
 
+# vpnEnabled set to true will create a VPN client sidecar to connect the VDL node to a VPN
+vpnEnabled: false
+# vpnConfigFile should contain the contents of a .ovpn file. It is used to connect the VPN client container to a VPN server
+vpnConfigFile:
+
+# loggingEnabled: if enabled, will create a FileBeat sidecar to read out the logs of the VDL node and send to a Logbeat server
+loggingEnabled: false
+
+# elasticCloudID sets cloud.id in the filebeat config for connecting it to your elasticcloud
+elasticCloudID:
+
+# elasticCloudAuth sets cloud.auth in the filebeat config for connecting it to your elasticcloud
+elasticCloudAuth:
+
+# elasticIndex sets the name of the index to which the filebeat will write its logs (default onpremise)
+elasticIndex: onpremise
+
+# Host name or IP address of the logstash server that the filebeat should connect to
+logstashHost:
+
+# CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat
+loggingCaCrt:
+
+# TLS certificate authenticating this Filebeat instance to the Rosemanlabs Logstash server
+filebeatCrt:
+
+# Secret key belonging to the filebeatCrt certificate
+filebeatKey:
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: false
@@ -124,30 +153,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-# vpnEnabled set to true will create a VPN client sidecar to connect the VDL node to a VPN
-vpnEnabled: false
-# vpnConfigFile should contain the contents of a .ovpn file. It is used to connect the VPN client container to a VPN server
-vpnConfigFile:
-
-# sendLogs: if enabled, will create a FileBeat sidecar to read out the logs of the VDL node
-sendLogs: false
-
-# elasticCloudID sets cloud.id in the filebeat config for connecting it to your elasticcloud
-elasticCloudID:
-
-# elasticCloudAuth sets cloud.auth in the filebeat config for connecting it to your elasticcloud
-elasticCloudAuth:
-
-# elasticIndex sets the name of the index to which the filebeat will write its logs (default onpremise)
-elasticIndex: onpremise
-
-# Host name or IP address of the logstash server that the filebeat should connect to
-logstashHost:
-
-# 
-loggingCaCrt:
-
-filebeatCrt:
-
-filebeatKey:

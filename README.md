@@ -90,6 +90,16 @@ During install, the following values should be specified or can be overridden:
 | secrets.sign0Pk           | if `core.scriptSignMode` |                         |                                                                                        |
 | secrets.sign1Pk           | if `core.scriptSignMode` |                         |                                                                                        |
 | secrets.sign2Pk           | if `core.scriptSignMode` |                         |                                                                                        |
+| vpnEnabled                |                          | false                   | If true, a VPN client sidecar is created to connect the VDL node to a VPN.             |
+| vpnConfigFile             | if `vpnEnabled`          |                         | Content of a .ovpn file, for connecting to an OpenVPN server.                          |
+| loggingEnabled            |                          | false                   | if true, a FileBeat sidecar is created to send the VDL logs to a Logbeat server.       |
+| elasticCloudID            | if `loggingEnabled`      |                         | Sets cloud.id in the filebeat config for connecting to Elastic Cloud.                  |
+| elasticCloudAuth          | if `loggingEnabled`      |                         | Sets cloud.auth in the filebeat config for connecting to Elastic Cloud.                |
+| elasticIndex              | if `loggingEnabled`      | "onpremise"             | Sets the index name to which the filebeat will write its logs                          |
+| logstashHost              | if `loggingEnabled`      |                         | Host name or IP address of the logstash server to connect to                           |
+| loggingCaCrt              | if `loggingEnabled`      |                         | CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat   |
+| filebeatCrt               | if `loggingEnabled`      |                         | TLS certificate authenticating Filebeat to the Logstash server                         |
+| filebeatKey               | if `loggingEnabled`      |                         | Secret key belonging to the filebeatCrt certificate                                    |
 | podAnnotations            |                          | {}                      | sets extra pod annotations                                                             |
 | securityContext           |                          | {}                      | sets the securityContext                                                               |
 | serviceN2n.type           |                          | LoadBalancer            | sets the type of the service for node to node communication.                           |
@@ -102,7 +112,6 @@ During install, the following values should be specified or can be overridden:
 | ingress.className         |                          | ""                      |                                                                                        |
 | annotations               |                          | {}                      |                                                                                        |
 | hosts                     |                          |                         |                                                                                        |
-
 
 # appendix II: values recognized by docker image
 
