@@ -10,26 +10,26 @@ With the following steps, you can setup your own VDL node:
 3. Acquire the needed key material (discuss with your Roseman Labs contact on how to do this) and store it all in a single directory.
 4. Create your override file based on the following template (see appendix 1 for details on the parameters):
 
-```yaml
-imageCredentials:
-  username: "USERNAME"
-  password: "PASSWORD"
-core:
-  nodeNr: "2"
-  peerAHostname: "HOSTNAME"
-  peerBHostname: "HOSTNAME"
-  peerAPort: "6000"
-  peerBPort: "6000"
-pvc:
-  storageClassName: "standard"
-resources:
-  limits:
-    cpu: 1
-    memory: 2Gi
-  requests:
-    cpu: 1
-    memory: 2Gi
-```
+    ```yaml
+    imageCredentials:
+      username: "USERNAME"
+      password: "PASSWORD"
+    core:
+      nodeNr: "2"
+      peerAHostname: "HOSTNAME"
+      peerBHostname: "HOSTNAME"
+      peerAPort: "6000"
+      peerBPort: "6000"
+    pvc:
+      storageClassName: "standard"
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+    ```
 5. Run the `deploy_single_node.sh` script with the following format:
 ```sh
 ./deploy_single_node.sh <namespace> <override_file> <override_secrets_dir>
@@ -96,7 +96,7 @@ During install, the following values should be specified or can be overridden:
 | elasticCloudID            | if `loggingEnabled`      |                         | Sets cloud.id in the filebeat config for connecting to Elastic Cloud.                  |
 | elasticCloudAuth          | if `loggingEnabled`      |                         | Sets cloud.auth in the filebeat config for connecting to Elastic Cloud.                |
 | elasticIndex              | if `loggingEnabled`      | "onpremise"             | Sets the index name to which the filebeat will write its logs                          |
-| logstashHost              | if `loggingEnabled`      |                         | Host name or IP address of the logstash server to connect to                           |
+| logstashHost              | if `loggingEnabled`      |                         | Host name/IP (add :port to override default 5044) of the logstash server to connect to |
 | loggingCaCrt              | if `loggingEnabled`      |                         | CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat   |
 | filebeatCrt               | if `loggingEnabled`      |                         | TLS certificate authenticating Filebeat to the Logstash server                         |
 | filebeatKey               | if `loggingEnabled`      |                         | Secret key belonging to the filebeatCrt certificate                                    |
