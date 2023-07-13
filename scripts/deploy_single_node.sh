@@ -11,22 +11,23 @@ help() {
   # Display help message
   echo "deploy_single_node.sh is designed to simplify deployment of a single VDL node"
   echo 
-  echo "Syntax: ./deploy_single_node.sh [-h] [-c </path/to/vpnconfig.ovpn>][-p </path/to/chart.tgz>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+  echo "Syntax: ./deploy_single_node.sh [-h][-c </path/to/vpnconfig.ovpn>][-t </path/to/filebeat/tls/certs/>][-p </path/to/chart.tgz>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
   echo "Positional arguments:"
-  echo "<namespace>                     Kubernetes namespace to deploy the chart in"
-  echo "</path/to/value/overwrite/file> Path to the file containing all values that need to be overwritten, except for the secrets"
-  echo "<path/to/secrets/dir/>          Path to the folder containing all keys for overwriting all .Values.secrets. values"
+  echo "<namespace>                         Kubernetes namespace to deploy the chart in"
+  echo "</path/to/value/overwrite/file>     Path to the file containing all values that need to be overwritten, except for the secrets"
+  echo "<path/to/secrets/dir/>              Path to the folder containing all keys for overwriting all .Values.secrets. values"
   echo "options:"
-  echo "  -h                            Print this help message"
-  echo "  -c  </path/to/vpnconfig.ovpn> Sets the config file path"
-  echo "  -p  </path/to/chart.tgz>      Use a local .tgz chart instead of the vdl chart of the rosemanlabs repo"
-  echo "  -f                            Delete the namespace before trying to install the chart"
+  echo "  -h                                Print this help message"
+  echo "  -c </path/to/vpnconfig.ovpn>      Sets the config file path"
+  echo "  -p </path/to/chart.tgz>           Use a local .tgz chart instead of the vdl chart of the rosemanlabs repo"
+  echo "  -f                                Delete the namespace before trying to install the chart"
+  echo "  -t </path/to/filebeat/tls/certs/> Sets the path to tls secrets for filebeat (if not set, and logging is enabled, tls certs are expected to be in the standard secrets directory)"
 }
 
 local_chart=false
 delete_namespace=false
 
-while getopts 'hfp:c:' opt; do
+while getopts 'hfp:c:t:' opt; do
   case "$opt" in
     h)
       help
@@ -42,6 +43,12 @@ while getopts 'hfp:c:' opt; do
       vpn_config_file=$OPTARG
       if [[ ! -f "$vpn_config_file" ]]; then
 		    die "$vpn_config_file vpn config file does not exist"
+      fi
+      ;;
+    t)
+      filebeat_tls_certs_dir=$OPTARG
+      if [[ ! -d "$filebeat_tls_certs_dir" ]] then
+        die "$filebeat_tls_certs_dir directory does not exist"
       fi
       ;;
     :)
@@ -71,14 +78,7 @@ if $delete_namespace; then
   kubectl delete namespace "$namespace" || true
 fi
 
-if $local_chart; then
-	# Extract chartname from helm package command (extract "/path/to/chart.tgz")
-	pushd charts >/dev/null
-	chartname=$(helm package ../vdl | grep -o '/.*\.tgz')
-	popd >/dev/null
-
-	echo "Chart successfully created at $chartname"
-else
+if ! $local_chart ; then
 	# Exctract repo name pointing to https://helm.rosemancloud.com and append /vdl to get the chart name
 	chartname="$(helm repo list | sed -rne 's/[ \t]+https:\/\/helm\.rosemancloud\.com.*/\/vdl/p')"
 fi
@@ -152,6 +152,29 @@ if [[ "$vpn_enabled" -eq "0" ]]; then
 	base64 -w0 < "$vpn_config_file" > "$tmpdir/vpnconf.ovpn.b64"
 	install_params+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
 fi
+
+# set +e because grep exits with an error if loggingEnabled: false (which is what we test here for)
+set +e
+grep -qP '(?<=loggingEnabled: )true' "$overwritefile"
+# Store exit status in vpn_enabled
+send_logs_enabled=$?
+set -e
+
+# test to see if exit status of $vpn_enabled is 0
+if [[ "$send_logs_enabled" -eq "0" ]]; then
+  if [[ -z "$filebeat_tls_certs_dir" ]]; then
+    filebeat_tls_certs_dir="$secrets_dir"
+    echo "No option -t </path/to/filebeat/tls/certs/> was provided, we assume tls certs are present in the default secrets directory"
+	fi
+  base64 -w0 < "$filebeat_tls_certs_dir"/filebeat-client.key > "$tmpdir/filebeat-client.key.b64"
+  base64 -w0 < "$filebeat_tls_certs_dir"/filebeat-client.crt > "$tmpdir/filebeat-client.crt.b64"
+  base64 -w0 < "$filebeat_tls_certs_dir"/logging-ca.crt > "$tmpdir/logging-ca.crt.b64"
+
+	install_params+=( --set-file "filebeatKey=$tmpdir/filebeat-client.key.b64" )
+  install_params+=( --set-file "filebeatCrt=$tmpdir/filebeat-client.crt.b64" )
+  install_params+=( --set-file "loggingCaCrt=$tmpdir/logging-ca.crt.b64" )
+fi
+
 set -x
 helm upgrade --install vdl "${install_params[@]}"
 set +x

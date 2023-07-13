@@ -1,0 +1,21 @@
+{{- if .Values.loggingEnabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-filebeat-config
+data:
+  filebeat.yml: |
+    filebeat:
+      inputs:
+        - type: filestream
+          id: {{ .Chart.Name }}-node-logs
+          paths:
+            - /var/log/vdl/*.log
+    output.logstash:
+      hosts: ["{{ .Values.logstashHost}}"]
+      ssl.certificate_authorities: ["/etc/certs/logging-ca.crt"]
+      ssl.certificate: "/etc/certs/filebeat-client.crt"
+      ssl.key: "/etc/certs/filebeat-client.key"
+    setup.template.name: "{{ .Values.elasticIndex }}"
+    setup.template.pattern: "{{ .Values.elasticIndex }}-%{[agent.version]}"
+{{- end }}

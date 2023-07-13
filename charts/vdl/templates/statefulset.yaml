@@ -1,0 +1,185 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "vdl.fullname" . }}
+  labels:
+    {{- include "vdl.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "vdl.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "vdl.fullname" . }}-n2n
+  # ^ TODO
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "vdl.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.imageCredentials.name }}
+      serviceAccountName: {{ include "vdl.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: persistence
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-storage
+        - name: secrets
+          secret:
+            secretName: {{ .Chart.Name }}-secret-vdl
+            defaultMode: 420
+            optional: false
+        {{- if .Values.loggingEnabled }}
+        - name: vdl-logs
+          emptyDir: {} # TODO: add either PVC or sizeLimit
+        - name: filebeat-config
+          configMap:
+            name: {{ .Chart.Name }}-filebeat-config
+            items:
+              - key: filebeat.yml
+                path: filebeat.yml
+        - name: filebeat-certs
+          secret:
+            secretName: {{ .Chart.Name }}-filebeat-tls-secrets
+            optional: false
+        {{- end }}
+        {{- if .Values.vpnEnabled }}
+        - name: ephemeral
+          emptyDir:
+            sizeLimit: 20Ki
+        - name: vpnconfig
+          secret:
+            secretName: {{ .Chart.Name }}-vpn-config
+            optional: false
+        {{- end }}   
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: persistence
+              mountPath: /app/data
+            - name: secrets
+              mountPath: /app/secrets
+          {{- if .Values.loggingEnabled }}
+            - name: vdl-logs
+              mountPath: /var/log/vdl/
+          command: [ "/bin/bash", "-c", "./runner.sh 2>&1 | tee /var/log/vdl/test.log" ]
+          {{- end }}
+          env:
+            - name: NODE_NR
+              value: {{ .Values.core.nodeNr | quote }}
+            - name: NODE_PEER_A_HOSTNAME
+              value: {{ .Values.core.peerAHostname | quote }}
+            - name: NODE_PEER_B_HOSTNAME
+              value: {{ .Values.core.peerBHostname | quote }}
+            - name: NODE_PEER_A_PORT
+              value: {{ .Values.core.peerAPort | quote }}
+            - name: NODE_PEER_B_PORT
+              value: {{ .Values.core.peerBPort | quote }}
+            - name: NODE_VDL_PORT
+              value: "6000"
+            - name: NODE_HTTPS_PORT
+              value: "9820"
+            - name: NODE_LIVENESS_PORT
+              value: "4240"
+            - name: NODE_CORES
+              value: {{ .Values.core.cores | quote }}
+            - name: NODE_PORT_PER_CORE_MODE
+              value: "1"
+            - name: NODE_MEMORY
+              value: {{ .Values.core.memory | quote }}
+            - name: NODE_SCRIPT_SIGN_MODE
+              value: {{ .Values.core.scriptSignMode | quote }}
+            - name: NODE_SCRIPT_SIGN_KEYS
+              value: {{ .Values.core.scriptSignKeys | quote }}
+            - name: NODE_LOG_LEVEL
+              value: {{ .Values.core.logLevel | quote }}
+            - name: NODE_AUX_FLAGS
+              value: {{ .Values.core.auxFlags | quote }}
+          livenessProbe:
+            tcpSocket:
+              port: 4240
+            initialDelaySeconds: 30
+            timeoutSeconds: 3
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.loggingEnabled }}
+        - name: vdl-log-collector
+          image: docker.elastic.co/beats/filebeat:8.8.1
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: vdl-logs
+              mountPath: /var/log/vdl/
+            - name: filebeat-config
+              mountPath: /usr/share/filebeat/filebeat.yml
+              subPath: filebeat.yml
+            - name: filebeat-certs
+              mountPath: /etc/certs
+          resources:
+            limits:
+              memory: 100Mi # TODO: check if this is reasonable
+            requests:
+              cpu: 10m
+              memory: 100Mi
+        {{- end }}
+        {{- if .Values.vpnEnabled }}
+        - name: openvpn-client
+          image: ghcr.io/wfg/openvpn-client
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: ephemeral
+              mountPath: /data/vpn
+          env:
+            - name: VPN_CONFIG_FILE
+              value: client.ovpn
+            - name: ALLOWED_SUBNETS
+              value: 
+            - name: AUTH_SECRET
+              value: 
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+               - "NET_ADMIN"
+          resources:
+            limits:
+              memory: 100Mi # TODO: check if this is reasonable
+            requests:
+              cpu: 100m
+              memory: 100Mi
+        {{- end }}
+      {{- if .Values.vpnEnabled }}
+      # the vpn-client image needs rw access to the folder in which the config file is stored
+      # The initcontainer copies the config file store in a ro mounted secret to a rw moutned ephemeral volume
+      initContainers:
+        - name: vpn-config-setup
+          image: "alpine:3.12"
+          command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
+          volumeMounts:
+            - name: vpnconfig
+              mountPath: /config
+            - name: ephemeral
+              mountPath: /data/vpn
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

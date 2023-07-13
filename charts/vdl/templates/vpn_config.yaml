@@ -1,0 +1,9 @@
+{{- if .Values.vpnEnabled -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Chart.Name }}-vpn-config
+data:
+  client.ovpn: |-
+    {{ required "Add flag: --set-file clientopvn=<(base64 -w0 < /path/to/client.ovpn) to helm install" .Values.vpnConfigFile }}
+{{- end }}

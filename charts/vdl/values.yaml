@@ -1,0 +1,155 @@
+# Default values for vdl.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: ghcr.io/rosemanlabs/vdl
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+imageCredentials:
+  name: creds-pull
+  registry: ghcr.io/rosemanlabs/vdl
+  username:
+  password: 
+  email: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+core:
+  nodeNr:
+  peerAHostname: "tbd"
+  peerBHostname: "tbd"
+  peerAPort: "6000"
+  peerBPort: "6000"
+  cores: "1"
+  memory: "900M"
+  logLevel: "debug"
+  scriptSignMode: "0"
+  # TODO: see if this value is needed or not (I think it should just be set to [ sign0.pk, sign1.pk, sign2.pk ])
+  scriptSignKeys: 
+
+secrets:
+  selfsignedcaCrt:
+  licenseKey:
+  httpd0Crt:
+  httpd0Key:
+  httpd1Crt:
+  httpd1Key:
+  httpd2Crt:
+  httpd2Key:
+  server0Crt:
+  server0Key:
+  server0Pk:
+  server0SkB64:
+  server1Crt:
+  server1Key:
+  server1Pk:
+  server1SkB64:
+  server2Crt:
+  server2Key:
+  server2Pk:
+  server2SkB64:
+  sign0PkB64:
+  sign1PkB64:
+  sign2PkB64:
+  sign0Pk:
+  sign1Pk:
+  sign2Pk:
+
+# vpnEnabled set to true will create a VPN client sidecar to connect the VDL node to a VPN
+vpnEnabled: false
+# vpnConfigFile should contain the contents of a .ovpn file. It is used to connect the VPN client container to a VPN server
+vpnConfigFile:
+
+# loggingEnabled: if enabled, will create a FileBeat sidecar to read out the logs of the VDL node and send to a Logbeat server
+loggingEnabled: false
+
+# elasticCloudID sets cloud.id in the filebeat config for connecting it to your elasticcloud
+elasticCloudID:
+
+# elasticCloudAuth sets cloud.auth in the filebeat config for connecting it to your elasticcloud
+elasticCloudAuth:
+
+# elasticIndex sets the name of the index to which the filebeat will write its logs (default onpremise)
+elasticIndex: onpremise
+
+# Host name or IP address of the logstash server that the filebeat should connect to
+logstashHost:
+
+# CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat
+loggingCaCrt:
+
+# TLS certificate authenticating this Filebeat instance to the Rosemanlabs Logstash server
+filebeatCrt:
+
+# Secret key belonging to the filebeatCrt certificate
+filebeatKey:
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+serviceN2n:
+  type: LoadBalancer
+  exposePort: 6000
+
+serviceCrandas:
+  enabled: true
+  type: LoadBalancer
+  exposePort: 9820
+
+pvc:
+  storageClassName:
+  size: 5Gi
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  # Explicit (minimal) requirements for VDL
+  # NOTE: cpus > 1 requires a range of ports to be opened
+  limits:
+    cpu: 1
+    memory: 1024Mi
+  requests:
+    cpu: 1
+    memory: 1024Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

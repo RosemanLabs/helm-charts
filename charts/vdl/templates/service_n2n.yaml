@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vdl.fullname" . }}-n2n
+  labels:
+    {{- include "vdl.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.serviceN2n.type }}
+  ports:
+    - port: {{ .Values.serviceN2n.exposePort }}
+      targetPort: 6000
+      protocol: TCP
+      name: n2n
+  selector:
+    {{- include "vdl.selectorLabels" . | nindent 4 }}
