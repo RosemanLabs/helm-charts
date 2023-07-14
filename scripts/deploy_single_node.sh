@@ -11,17 +11,21 @@ help() {
   # Display help message
   echo "deploy_single_node.sh is designed to simplify deployment of a single VDL node"
   echo 
-  echo "Syntax: ./deploy_single_node.sh [-h][-c </path/to/vpnconfig.ovpn>][-t </path/to/filebeat/tls/certs/>][-p </path/to/chart.tgz>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+  echo "Syntax: ./deploy_single_node.sh [-h][-c <vpnconfig.ovpn>][-t <filebeat_tls_certs_dir>][-p <chart.tgz>][-f] <namespace> <override_file> <secrets_dir>"
+  echo ""
   echo "Positional arguments:"
   echo "<namespace>                         Kubernetes namespace to deploy the chart in"
-  echo "</path/to/value/overwrite/file>     Path to the file containing all values that need to be overwritten, except for the secrets"
-  echo "<path/to/secrets/dir/>              Path to the folder containing all keys for overwriting all .Values.secrets. values"
-  echo "options:"
+  echo "<override_file>                     Path to the file containing all values that need to be overwritten, except for the secrets"
+  echo "<secrets_dir>                       Path to the folder containing all keys for overwriting all .Values.secrets. values"
+  echo ""
+  echo "Optional general arguments:"
   echo "  -h                                Print this help message"
-  echo "  -c </path/to/vpnconfig.ovpn>      Sets the config file path"
-  echo "  -p </path/to/chart.tgz>           Use a local .tgz chart instead of the vdl chart of the rosemanlabs repo"
-  echo "  -f                                Delete the namespace before trying to install the chart"
-  echo "  -t </path/to/filebeat/tls/certs/> Sets the path to tls secrets for filebeat (if not set, and logging is enabled, tls certs are expected to be in the standard secrets directory)"
+  echo "  -f                                Deletes any existing namespace (with the same name) before installing the chart"
+  echo "  -p <chart.tgz>                    Use a local .tgz chart instead of the vdl chart of the rosemanlabs repo"
+  echo ""
+  echo "Optional modus-specific arguments:"
+  echo "  -c <vpnconfig.ovpn>               For VPN mode: sets the VPN config file path"
+  echo "  -t <filebeat_tls_certs_dir>       For log-forwarding mode: sets the path to TLS secrets for filebeat (if not set, and logging is enabled, TLS certs are expected to be in the standard secrets directory)"
 }
 
 local_chart=false
