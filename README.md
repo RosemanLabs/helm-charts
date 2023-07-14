@@ -1,7 +1,7 @@
 # Deploying your own VDL server using helm
 For ease of use, a Helm chart can be used to setup a complete VDL node on an existing Kubernetes cluster. This helm chart will deploy a StatefulSet which manages the VDL node, the services for connecting to it, a Kubernetes Secret for storing key material, and a persistent volume claim for storage. Optionally, a VPN client sidecar container will be deployed in the pod containing the VDL node, which can be used to connect the VDL node to any already existing OpenVPN server.
 
-Due to the large number of values that need to be overwritten, we recomend deploying it by running the `deploy_single_node.sh` script and not using helm commands directly.
+Due to the large number of values that need to be overwritten, we recomend deploying by running `deploy_single_node.sh` from the `scripts` directory instead of using helm commands directly.
 
 With the following steps, you can setup your own VDL node:
 
