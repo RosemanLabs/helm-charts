@@ -31,6 +31,8 @@ help() {
 local_chart=false
 delete_namespace=false
 
+USAGE_STRING="usage: $0 [-c </path/to/vpnconfig.ovpn>][-p </path/to/chart.tgz>][-t </path/to/filebaet/tls/certs>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+
 while getopts 'hfp:c:t:' opt; do
   case "$opt" in
     h)
@@ -51,7 +53,7 @@ while getopts 'hfp:c:t:' opt; do
       ;;
     t)
       filebeat_tls_certs_dir=$OPTARG
-      if [[ ! -d "$filebeat_tls_certs_dir" ]] then
+      if [[ ! -d "$filebeat_tls_certs_dir" ]]; then
         die "$filebeat_tls_certs_dir directory does not exist"
       fi
       ;;
@@ -59,7 +61,7 @@ while getopts 'hfp:c:t:' opt; do
       die "Missing required argument for optional flag."
       ;;
     ?)
-      die "usage: $0 [-c </path/to/vpnconfig.ovpn>][-p </path/to/chart.tgz>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+      die "$USAGE_STRING"
       ;;
   esac
 done
@@ -67,8 +69,9 @@ done
 shift "$((OPTIND-1))"
 
 # Because there are optional arguments, use OPTIND for indexing required commands (see getopts documentation)
-if [ $# -lt 2 ]; then
- die "usage: $0 [-c </path/to/vpnconfig.ovpn>][-f][-p] <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+if [ $# -lt 3 ]; then
+  echo "Please provide all three required arguments"
+  die "$USAGE_STRING"
 fi
 
 if [[ -z $KUBECONFIG ]]; then
@@ -85,6 +88,11 @@ fi
 if ! $local_chart ; then
 	# Exctract repo name pointing to https://helm.rosemancloud.com and append /vdl to get the chart name
 	chartname="$(helm repo list | sed -rne 's/[ \t]+https:\/\/helm\.rosemancloud\.com.*/\/vdl/p')"
+fi
+
+if [[ -z "$chartname" ]]; then
+  echo "No helm repository found for https://helm.rosemancloud.com"
+  die "Please add it before running this script, execute: helm repo add REPONAME https://helm.rosemancloud.com"
 fi
 
 overwritefile=$2
