@@ -3,6 +3,16 @@ entries:
   vdl:
   - apiVersion: v2
     appVersion: v1.5.1
+    created: "2023-07-17T15:49:12.370050088Z"
+    description: A Helm chart for the Roseman Labs Virtual Data Lake
+    digest: fa92de61f9abbb25c74ab3f5e494f82c0b21a958b85a1e03df4bd3cf417c2ae2
+    name: vdl
+    type: application
+    urls:
+    - https://github.com/RosemanLabs/helm-charts/releases/download/vdl-0.2.2/vdl-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
+    appVersion: v1.5.1
     created: "2023-07-14T13:14:02.826465453Z"
     description: A Helm chart for the Roseman Labs Virtual Data Lake
     digest: 9e66dc0add13f4ea89bff4bc05f8c1d8a51571847d682676621dbee7504a8d1f
@@ -21,4 +31,4 @@ entries:
     urls:
     - https://github.com/RosemanLabs/helm-charts/releases/download/vdl-0.2.0/vdl-0.2.0.tgz
     version: 0.2.0
-generated: "2023-07-14T13:14:02.826476354Z"
+generated: "2023-07-17T15:49:12.370060288Z"
