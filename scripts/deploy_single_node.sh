@@ -118,7 +118,7 @@ peer_b=$(( $(( "$node" + 1 )) % 3 ))
 
 # Save base64 encodings as files for all keys, to be used with --set-file option for setting Helm values 
 ts=$(date -I)
-tmpdir="/tmp/helm_secrets_$ts/"
+tmpdir="/tmp/helm_secrets_$ts"
 mkdir -p "$tmpdir"
 base64 -w0 < "$secrets_dir/selfsignedca.crt" > "$tmpdir/selfsignedca.crt.b64"
 base64 -w0 < "$secrets_dir/license.key" > "$tmpdir/license.key.b64"
@@ -194,6 +194,8 @@ set +x
 rm -r "$tmpdir"
 
 # TODO check if vdl-n2n needs to be parameterized
-echo "Fetching service ip... (this might take a few minutes)"
-until IP=$(kubectl get svc --namespace "$namespace" vdl-n2n --template '{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}' 2>/dev/null); do sleep 2s; done
-echo "$IP"
+if [[ ! "$vpn_enabled" -eq "0"  ]]; then
+  echo "Fetching service ip... (this might take a few minutes)"
+  until IP=$(kubectl get svc --namespace "$namespace" vdl-n2n --template '{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}' 2>/dev/null); do sleep 2s; done
+  echo "$IP"
+fi
