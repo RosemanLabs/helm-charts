@@ -1,3 +1,4 @@
+{{- if not .Values.vpnEnabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -13,3 +14,4 @@ spec:
       name: n2n
   selector:
     {{- include "vdl.selectorLabels" . | nindent 4 }}
+{{- end -}}  
