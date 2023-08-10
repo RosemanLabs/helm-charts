@@ -8,8 +8,6 @@ spec:
   selector:
     matchLabels:
       {{- include "vdl.selectorLabels" . | nindent 6 }}
-  serviceName: {{ include "vdl.fullname" . }}-n2n
-  # ^ TODO
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -159,8 +157,8 @@ spec:
               memory: 100Mi
         {{- end }}
       {{- if .Values.vpnEnabled }}
-      # the vpn-client image needs rw access to the folder in which the config file is stored
-      # The initcontainer copies the config file store in a ro mounted secret to a rw moutned ephemeral volume
+      # The vpn-client image needs rw access to the folder in which the config file is stored, therefore
+      # the initcontainer copies the config file stored in a ro-mounted secret to a rw-mounted ephemeral volume
       initContainers:
         - name: vpn-config-setup
           image: "alpine:3.12"
