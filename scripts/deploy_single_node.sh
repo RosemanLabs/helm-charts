@@ -3,7 +3,7 @@
 set -e
 
 die(){
-  echo "$@"
+  echo ERROR: "$@"
   exit 1
 }
 
@@ -74,18 +74,16 @@ if [ $# -lt 3 ]; then
   die "$USAGE_STRING"
 fi
 
-if [[ -z $KUBECONFIG ]]; then
+if [[ -z "$KUBECONFIG" ]]; then
   die "Environment varialbe KUBECONFIG is unset, please set it to point to the correct config file before running this script."
 fi
 
 namespace=$1
-
 if $delete_namespace; then
-  # Add || true to not fail if namespace does not exist  
-  kubectl delete namespace "$namespace" || true
+  ! kubectl delete namespace "$namespace"
 fi
 
-if ! $local_chart ; then
+if ! $local_chart; then
 	# Exctract repo name pointing to https://helm.rosemancloud.com and append /vdl to get the chart name
 	chartname="$(helm repo list | sed -rne 's/[ \t]+https:\/\/helm\.rosemancloud\.com.*/\/vdl/p')"
 fi
@@ -95,11 +93,11 @@ if [[ -z "$chartname" ]]; then
   die "Please add it before running this script, execute: helm repo add REPONAME https://helm.rosemancloud.com"
 fi
 
-overwritefile=$2
-if [[ ! -f "$overwritefile" ]]; then
-	die "$overwritefile overwrite file does not exists"
-elif ! (echo "$overwritefile" | grep -Eq '.*\.ya?ml') ; then
-	die "$overwritefile is not a .yml or .yaml file"
+override_file=$2
+if [[ ! -f "$override_file" ]]; then
+	die "$override_file overwrite file does not exists"
+elif ! (echo "$override_file" | grep -Eq '.*\.ya?ml') ; then
+	die "$override_file is not a .yml or .yaml file"
 fi
 
 secrets_dir=$3
@@ -107,43 +105,39 @@ if [[ ! -d "$secrets_dir" ]]; then
 	die "$secrets_dir directory does not exists"
 fi
 
-node=$(grep -oP '(?<=nodeNr: \").' "$overwritefile")
-if [[ ! ("$node" == "0" || "$node" == "1" || "$node" == "2") ]]; then
-	die "nodeNr: $node in $overwritefile is not a valid node numer, should be either 0, 1, or 2"
+node_nr=$(grep -oP '(?<=nodeNr: \").' "$override_file")
+if [[ ! ("${node_nr}" == "0" || "${node_nr}" == "1" || "${node_nr}" == "2") ]]; then
+	die "nodeNr: ${node_nr} in $override_file is not a valid node numer, should be either 0, 1, or 2"
 fi
 
-# || true is needed, otherwise -e causes an error if 0 is returned by expr()
-peer_a=$(( $(( "$node" + 2 )) % 3 ))
-peer_b=$(( $(( "$node" + 1 )) % 3 ))
+peer_a=$(((node_nr + 2) % 3))
+peer_b=$(((node_nr + 1) % 3))
 
 # Save base64 encodings as files for all keys, to be used with --set-file option for setting Helm values 
-ts=$(date -I)
-tmpdir="/tmp/helm_secrets_$ts"
-mkdir -p "$tmpdir"
+tmpdir=$(mktemp -d)
 base64 -w0 < "$secrets_dir/selfsignedca.crt" > "$tmpdir/selfsignedca.crt.b64"
 base64 -w0 < "$secrets_dir/license.key" > "$tmpdir/license.key.b64"
-base64 -w0 < "$secrets_dir/httpd$node.crt" > "$tmpdir/httpd$node.crt.b64"
-base64 -w0 < "$secrets_dir/httpd$node.key" > "$tmpdir/httpd$node.key.b64"
-base64 -w0 < "$secrets_dir/server$peer_a.crt" > "$tmpdir/server$peer_a.crt.b64"
-base64 -w0 < "$secrets_dir/server$peer_b.crt" > "$tmpdir/server$peer_b.crt.b64"
-base64 -w0 < "$secrets_dir/server$node.crt" > "$tmpdir/server$node.crt.b64"
-base64 -w0 < "$secrets_dir/server$node.key" > "$tmpdir/server$node.key.b64"
-base64 -w0 < "$secrets_dir/server$node.sk.b64" > "$tmpdir/server$node.sk.b64.b64"
+base64 -w0 < "$secrets_dir/httpd${node_nr}.crt" > "$tmpdir/httpd${node_nr}.crt.b64"
+base64 -w0 < "$secrets_dir/httpd${node_nr}.key" > "$tmpdir/httpd${node_nr}.key.b64"
+base64 -w0 < "$secrets_dir/server${peer_a}.crt" > "$tmpdir/server${peer_a}.crt.b64"
+base64 -w0 < "$secrets_dir/server${peer_b}.crt" > "$tmpdir/server${peer_b}.crt.b64"
+base64 -w0 < "$secrets_dir/server${node_nr}.crt" > "$tmpdir/server${node_nr}.crt.b64"
+base64 -w0 < "$secrets_dir/server${node_nr}.key" > "$tmpdir/server${node_nr}.key.b64"
+base64 -w0 < "$secrets_dir/server${node_nr}.sk.b64" > "$tmpdir/server${node_nr}.sk.b64.b64"
 
-# Construct install command (add necesairy key material into helm values)
-install_params=("$chartname" --create-namespace --namespace "$namespace" --values "$overwritefile" )
+# Construct install command (add necessary key material into helm values)
+install_params=("$chartname" --create-namespace --namespace "$namespace" --values "$override_file" )
 install_params+=( --set-file "secrets.selfsignedcaCrt=$tmpdir/selfsignedca.crt.b64" )
 install_params+=( --set-file "secrets.licenseKey=$tmpdir/license.key.b64" )
-install_params+=( --set-file "secrets.httpd${node}Crt=$tmpdir/httpd$node.crt.b64" )
-install_params+=( --set-file "secrets.httpd${node}Key=$tmpdir/httpd$node.key.b64" )
-install_params+=( --set-file "secrets.server${peer_a}Crt=$tmpdir/server$peer_a.crt.b64" )
-install_params+=( --set-file "secrets.server${peer_b}Crt=$tmpdir/server$peer_b.crt.b64" )
-install_params+=( --set-file "secrets.server${node}Crt=$tmpdir/server$node.crt.b64" )
-install_params+=( --set-file "secrets.server${node}Key=$tmpdir/server$node.key.b64" )
-install_params+=( --set-file "secrets.server${node}SkB64=$tmpdir/server$node.sk.b64.b64" )
+install_params+=( --set-file "secrets.httpd${node_nr}Crt=$tmpdir/httpd${node_nr}.crt.b64" )
+install_params+=( --set-file "secrets.httpd${node_nr}Key=$tmpdir/httpd${node_nr}.key.b64" )
+install_params+=( --set-file "secrets.server${peer_a}Crt=$tmpdir/server${peer_a}.crt.b64" )
+install_params+=( --set-file "secrets.server${peer_b}Crt=$tmpdir/server${peer_b}.crt.b64" )
+install_params+=( --set-file "secrets.server${node_nr}Crt=$tmpdir/server${node_nr}.crt.b64" )
+install_params+=( --set-file "secrets.server${node_nr}Key=$tmpdir/server${node_nr}.key.b64" )
+install_params+=( --set-file "secrets.server${node_nr}SkB64=$tmpdir/server${node_nr}.sk.b64.b64" )
 
-# || true is needed, otherwise -e causes an error if 0 is returned by grep
-num_approvers=$(grep -oP '(?<=scriptSignMode: \").' "$overwritefile") || true
+! num_approvers=$(grep -oP '(?<=scriptSignMode: \").' "$override_file")
 if [[ $num_approvers -gt 0 ]]; then
 	base64 -w0 < "$secrets_dir/sign0.pk.b64" > "$tmpdir/sign0.pk.b64.b64"
 	base64 -w0 < "$secrets_dir/sign1.pk.b64" > "$tmpdir/sign1.pk.b64.b64"
@@ -152,28 +146,18 @@ if [[ $num_approvers -gt 0 ]]; then
 	install_params+=( --set-file "secrets.sign1PkB64=$tmpdir/sign1.pk.b64.b64" )
 fi
 
-# set +e because grep exits with an error if vpnEnabled: false (which is what we test here for)
-set +e
-grep -qP '(?<=vpnEnabled: )true' "$overwritefile"
-# Store exit status in vpn_enabled
-vpn_enabled=$?
-set -e
+grep -qP '(?<=vpnEnabled: )true' "$override_file" && vpn_enabled=1 || vpn_enabled=0
+grep -qP '(?<=loggingEnabled: )true' "$override_file" && send_logs_enabled=1 || send_logs_enabled=0
 
-# test to see if exit status of $vpn_enabled is 0
-if [[ "$vpn_enabled" -eq "0" ]]; then
+if [[ "$vpn_enabled" -eq 1 ]]; then
+  if ! [ -r "$vpn_config_file" ]; then
+    die "VPN enabled but vpn_config_file(='$vpn_config_file') not defined/found"
+  fi
 	base64 -w0 < "$vpn_config_file" > "$tmpdir/vpnconf.ovpn.b64"
 	install_params+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
 fi
 
-# set +e because grep exits with an error if loggingEnabled: false (which is what we test here for)
-set +e
-grep -qP '(?<=loggingEnabled: )true' "$overwritefile"
-# Store exit status in vpn_enabled
-send_logs_enabled=$?
-set -e
-
-# test to see if exit status of $vpn_enabled is 0
-if [[ "$send_logs_enabled" -eq "0" ]]; then
+if [[ "$send_logs_enabled" -eq 1 ]]; then
   if [[ -z "$filebeat_tls_certs_dir" ]]; then
     filebeat_tls_certs_dir="$secrets_dir"
     echo "No option -t </path/to/filebeat/tls/certs/> was provided, we assume tls certs are present in the default secrets directory"
@@ -189,13 +173,11 @@ fi
 
 set -x
 helm upgrade --install vdl "${install_params[@]}"
-set +x
-#clean up temporary directory with helm secrets
-rm -r "$tmpdir"
+{ set +x; } 2>&-
+rm -rf "$tmpdir"
 
-# TODO check if vdl-n2n needs to be parameterized
-if [[ ! "$vpn_enabled" -eq "0"  ]]; then
-  echo "Fetching service ip... (this might take a few minutes)"
+if [[ "$vpn_enabled" -eq 0 ]]; then
+  echo "Fetching n2n service ip... (this might take a few minutes)"
   until IP=$(kubectl get svc --namespace "$namespace" vdl-n2n --template '{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}' 2>/dev/null); do sleep 2s; done
   echo "$IP"
 fi

@@ -28,7 +28,7 @@ core:
   logLevel: "debug"
   scriptSignMode: "0"
   # TODO: see if this value is needed or not (I think it should just be set to [ sign0.pk, sign1.pk, sign2.pk ])
-  scriptSignKeys: 
+  scriptSignKeys:
 
 secrets:
   selfsignedcaCrt:
@@ -115,7 +115,7 @@ serviceN2n:
   exposePort: 6000
 
 serviceCrandas:
-  enabled: true
+  enabled: false # by default, most nodes will not be running a local crandas port
   type: LoadBalancer
   exposePort: 9820
 
