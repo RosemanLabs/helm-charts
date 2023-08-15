@@ -1,0 +1,20 @@
+imageCredentials:
+  # replace with credentials received from Roseman Labs
+  username: "USERNAME"
+  password: "PASSWORD"
+core:
+  nodeNr: "2"
+  peerAHostname: "HOSTNAME"
+  peerBHostname: "HOSTNAME"
+  peerAPort: "6000"
+  peerBPort: "6000"
+pvc:
+  # replace with the PVC className used in your k8s environment
+  storageClassName: "standard"
+resources:
+  limits:
+    cpu: 1
+    memory: 2Gi
+  requests:
+    cpu: 1
+    memory: 2Gi

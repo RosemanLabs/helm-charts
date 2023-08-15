@@ -11,7 +11,7 @@ help() {
   # Display help message
   echo "deploy_single_node.sh is designed to simplify deployment of a single VDL node"
   echo 
-  echo "Syntax: ./deploy_single_node.sh [-h][-c <vpnconfig.ovpn>][-t <filebeat_tls_certs_dir>][-p <chart.tgz>][-f] <namespace> <override_file> <secrets_dir>"
+  echo "$USAGE_STRING"
   echo ""
   echo "Positional arguments:"
   echo "<namespace>                         Kubernetes namespace to deploy the chart in"
@@ -31,7 +31,7 @@ help() {
 local_chart=false
 delete_namespace=false
 
-USAGE_STRING="usage: $0 [-c </path/to/vpnconfig.ovpn>][-p </path/to/chart.tgz>][-t </path/to/filebaet/tls/certs>][-f]  <namespace> </path/to/value/overwrite/file> <path/to/secrets/dir/>"
+USAGE_STRING="usage: $0 [-h][-c <vpnconfig.ovpn>][-t <filebeat_tls_certs_dir>][-p <chart.tgz>][-f] <namespace> <override_file> <secrets_dir>"
 
 while getopts 'hfp:c:t:' opt; do
   case "$opt" in
@@ -75,7 +75,7 @@ if [ $# -lt 3 ]; then
 fi
 
 if [[ -z "$KUBECONFIG" ]]; then
-  die "Environment varialbe KUBECONFIG is unset, please set it to point to the correct config file before running this script."
+  die "Environment variable KUBECONFIG is unset, please set it to point to the correct config file before running this script."
 fi
 
 namespace=$1
