@@ -31,12 +31,13 @@ With the following steps, you can setup your own VDL node:
         memory: 2Gi
     ```
 5. Run the `deploy_single_node.sh` script with the following format:
-```sh
-./deploy_single_node.sh <namespace> <override_file> <override_secrets_dir>
 ```
-  - `<namespace>` should be the Kubernetes namespace that to be used
-  - `<override_file>` should be the location of the previously created override file
-  - `<override_secrets_dir>` should be the path to the directory that stores the generated (override) key material
+./deploy_single_node.sh [-c <openvpn_file>] <namespace> <override_file> <override_secrets_dir>
+```
+  - `-c <openvpn_file>`: VPN configuration _(optional)_
+  - `<namespace>`: Kubernetes namespace where the objects will be created
+  - `<override_file>`: the name of the previously created override file
+  - `<override_secrets_dir>`: the name of the directory that stores the generated (override) key material
 
 # appendix I: values you can configure in the helm chart
 
