@@ -28,6 +28,9 @@ spec:
         - name: persistence
           persistentVolumeClaim:
             claimName: {{ .Chart.Name }}-storage
+        - name: dynamic-config
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-dynamic-config
         - name: secrets
           secret:
             secretName: {{ .Chart.Name }}-secret-vdl
@@ -55,7 +58,7 @@ spec:
           secret:
             secretName: {{ .Chart.Name }}-vpn-config
             optional: false
-        {{- end }}   
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -65,6 +68,8 @@ spec:
           volumeMounts:
             - name: persistence
               mountPath: /app/data
+            - name: dynamic-config
+              mountPath: /app/config
             - name: secrets
               mountPath: /app/secrets
           {{- if .Values.loggingEnabled }}
@@ -99,6 +104,12 @@ spec:
               value: {{ .Values.core.scriptSignMode | quote }}
             - name: NODE_SCRIPT_SIGN_KEYS
               value: {{ .Values.core.scriptSignKeys | quote }}
+            - name: NODE_PERSISTENCE_MODE
+              value: {{ .Values.core.persistenceMode | quote }}
+            - name: NODE_DYNAMIC_CONFIG_MODE
+              value: {{ .Values.core.dynamicConfigMode | quote }}
+            - name: NODE_DYNAMIC_CONFIG_FILE
+              value: "config.json"
             - name: NODE_LOG_LEVEL
               value: {{ .Values.core.logLevel | quote }}
             - name: NODE_AUX_FLAGS
@@ -158,10 +169,10 @@ spec:
               cpu: 100m
               memory: 100Mi
         {{- end }}
-      {{- if .Values.vpnEnabled }}
       # The vpn-client image needs rw access to the folder in which the config file is stored, therefore
       # the initcontainer copies the config file stored in a ro-mounted secret to a rw-mounted ephemeral volume
       initContainers:
+      {{- if .Values.vpnEnabled }}
         - name: vpn-config-setup
           image: "alpine:3.12"
           command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
@@ -170,6 +181,21 @@ spec:
               mountPath: /config
             - name: ephemeral
               mountPath: /data/vpn
+      {{- end }}
+      {{- if or (eq .Values.core.dynamicConfigMode "1") (eq .Values.core.dynamicConfigMode "true") }}
+        # NOTE: this logic may be moved into the main docker image later on
+        - name: vdl-config-setup
+          image: apteno/alpine-jq
+          command:
+            - /bin/sh
+            - '-xc'
+            - "test -e /config/config.json || jq -n --arg key \"$(base64 /tmp/web_app.pk)\" '{\"authorization_public_keys\":[$key],\"version\":\"1\"}' > /config/config.json"
+          volumeMounts:
+            - name: secrets
+              mountPath: /tmp/web_app.pk
+              subPath: web_app.pk
+            - name: dynamic-config
+              mountPath: /config
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

@@ -137,6 +137,13 @@ install_params+=( --set-file "secrets.server${node_nr}Crt=$tmpdir/server${node_n
 install_params+=( --set-file "secrets.server${node_nr}Key=$tmpdir/server${node_nr}.key.b64" )
 install_params+=( --set-file "secrets.server${node_nr}SkB64=$tmpdir/server${node_nr}.sk.b64.b64" )
 
+if grep -Eq 'dynamicConfigMode: *"(1|true)"' "$override_file"; then
+	base64 -w0 < "$secrets_dir/web_app.pk" > "$tmpdir/web_app.pk.b64"
+
+	install_params+=( --set-file "secrets.webAppPk=$tmpdir/web_app.pk.b64" )
+fi
+
+# Legacy script signing approach (deprecated)
 ! num_approvers=$(grep -oP '(?<=scriptSignMode: \").' "$override_file")
 if [[ $num_approvers -gt 0 ]]; then
 	base64 -w0 < "$secrets_dir/sign0.pk.b64" > "$tmpdir/sign0.pk.b64.b64"

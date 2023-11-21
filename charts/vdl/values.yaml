@@ -26,8 +26,10 @@ core:
   cores: "1"
   memory: "900M"
   logLevel: "debug"
+  persistenceMode: "1"
+  dynamicConfigMode: "0"
+  # legacy properties:
   scriptSignMode: "0"
-  # TODO: see if this value is needed or not (I think it should just be set to [ sign0.pk, sign1.pk, sign2.pk ])
   scriptSignKeys:
 
 secrets:
@@ -57,6 +59,7 @@ secrets:
   sign0Pk:
   sign1Pk:
   sign2Pk:
+  webAppPk:
 
 # vpnEnabled set to true will create a VPN client sidecar to connect the VDL node to a VPN
 vpnEnabled: false

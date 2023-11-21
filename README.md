@@ -63,10 +63,12 @@ During install, the following values should be specified or can be overridden:
 | core.cores                |                          | "1"                     | Number of cores the VDL node can use                                                   |
 | core.memory               |                          | "900M"                  | Number of Bytes of memory the VDL node can use                                         |
 | core.logLevel             |                          | "debug"                 | Sets the log level.                                                                    |
-| core.scriptSignMode       |                          | "0"                     | If set to "1" or "true", enforces script sign mode.                                    |
-| core.scriptSignKeys       |                          |                         | If core.scriptSignMode has been set, select which keys are used for scriptSigning      |
-| secrets.selfsignedcaCrt   | yes                      |                         | TODO add explanation of each key file                                                  |
-| secrets.licenseKey        | yes                      |                         | Each key should be passed as string to helm, helm will store it in a kubernetes secret |
+| core.persistenceMode      |                          | "1"                     | If set to "1" or "true", store tables to disk (data survives server reboots).          |
+| core.dynamicConfigMode    |                          | "0"                     | If set to "1" or "true", enable dynamic config mode (required for approvals).          |
+| core.scriptSignMode       |                          | "0"                     | (legacy) If set to "1" or "true", enforces script sign mode.                           |
+| core.scriptSignKeys       |                          |                         | (legacy) If core.scriptSignMode has been set, select which keys are used.              |
+| secrets.selfsignedcaCrt   | yes                      |                         | The certificate authority used for each of the TLS keys.                               |
+| secrets.licenseKey        | yes                      |                         | License key necessary for using the Virtual Data Lake software.                        |
 | secrets.httpd0Crt         | yes                      |                         |                                                                                        |
 | secrets.httpd0Key         | yes                      |                         |                                                                                        |
 | secrets.httpd1Crt         | yes                      |                         |                                                                                        |
@@ -85,12 +87,13 @@ During install, the following values should be specified or can be overridden:
 | secrets.server2Key        | yes                      |                         |                                                                                        |
 | secrets.server2Pk         | yes                      |                         |                                                                                        |
 | secrets.server2SkB64      | yes                      |                         |                                                                                        |
-| secrets.sign0PkB64        | if `core.scriptSignMode` |                         |                                                                                        |
-| secrets.sign1PkB64        | if `core.scriptSignMode` |                         |                                                                                        |
-| secrets.sign2PkB64        | if `core.scriptSignMode` |                         |                                                                                        |
-| secrets.sign0Pk           | if `core.scriptSignMode` |                         |                                                                                        |
-| secrets.sign1Pk           | if `core.scriptSignMode` |                         |                                                                                        |
-| secrets.sign2Pk           | if `core.scriptSignMode` |                         |                                                                                        |
+| secrets.webAppPk          | yes                      |                         |                                                                                        |
+| secrets.sign0PkB64        | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign1PkB64        | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign2PkB64        | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign0Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign1Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign2Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
 | vpnEnabled                |                          | false                   | If true, a VPN client sidecar is created to connect the VDL node to a VPN.             |
 | vpnConfigFile             | if `vpnEnabled`          |                         | Content of a .ovpn file, for connecting to an OpenVPN server.                          |
 | loggingEnabled            |                          | false                   | if true, a FileBeat sidecar is created to send the VDL logs to a Logbeat server.       |
