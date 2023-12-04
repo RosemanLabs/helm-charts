@@ -53,7 +53,7 @@ spec:
         {{- if .Values.vpnEnabled }}
         - name: ephemeral
           emptyDir:
-            sizeLimit: 20Ki
+            sizeLimit: 20Mi
         - name: vpnconfig
           secret:
             secretName: {{ .Chart.Name }}-vpn-config
