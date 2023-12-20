@@ -98,8 +98,6 @@ spec:
               value: {{ .Values.core.cores | quote }}
             - name: NODE_PORT_PER_CORE_MODE
               value: "1"
-            - name: NODE_MEMORY
-              value: {{ .Values.core.memory | quote }}
             - name: NODE_SCRIPT_SIGN_MODE
               value: {{ .Values.core.scriptSignMode | quote }}
             - name: NODE_SCRIPT_SIGN_KEYS
