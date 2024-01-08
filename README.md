@@ -49,26 +49,26 @@ During install, the following values should be specified or can be overridden:
 | image.pullPolicy          |                          | Always                  | sets the pull policiy for all images                                                   |
 | image.tag                 |                          |                         | Overrides the default app version tag                                                  |
 | imageCredentials.name     | yes                      |                         | "name of the credentials used to pull the images                                       |
-| imageCredentials.registry |                          | ghcr.io/rosemanlabs/vdl | Image registry the credentials belong to.                                              |
-| imageCredentials.username | yes                      |                         | Username needed for pulling the image.                                                 |
-| imageCredentials.password | yes                      |                         | Password or PAT needed for pulling the image.                                          |
-| imageCredentials.email    |                          | ""                      | Email belonging to the image credentials.                                              |
-| nameOverride              |                          | ""                      | Overrides part of the fully qualified app name with which to reach the node.           |
-| fullnameOverride          |                          | ""                      | Overrides the default fully qualified app name with which to reach the node.           |
-| core.nodeNR               | yes                      |                         | Number in range \[0, 1, 2\], nodes should be deployed in descending order.             |
-| core.peerAHostname        | yes                      | "tbd"                   | Sets the hostname or URL at which peer A should be reachable.                          |
-| core.peerBHostname        | yes                      | "tbd"                   | Sets the hostname or URL at which peer B should be reachable.                          |
-| core.peerAPort            | yes                      | "6000"                  | Sets the port that peer A has opened for connecting to the others.                     |
-| core.peerBPort            | yes                      | "6000"                  | Sets the port that peer B has opened for connecting to the others.                     |
+| imageCredentials.registry |                          | ghcr.io/rosemanlabs/vdl | Image registry the credentials belong to                                               |
+| imageCredentials.username | yes                      |                         | Username needed for pulling the image                                                  |
+| imageCredentials.password | yes                      |                         | Password or PAT needed for pulling the image                                           |
+| imageCredentials.email    |                          | ""                      | Email belonging to the image credentials                                               |
+| nameOverride              |                          | ""                      | Overrides part of the fully qualified app name with which to reach the node            |
+| fullnameOverride          |                          | ""                      | Overrides the default fully qualified app name with which to reach the node            |
+| core.nodeNR               | yes                      |                         | Number in range \[0, 1, 2\], nodes should be deployed in descending order              |
+| core.peerAHostname        | yes                      | "tbd"                   | Sets the hostname or URL at which peer A should be reachable                           |
+| core.peerBHostname        | yes                      | "tbd"                   | Sets the hostname or URL at which peer B should be reachable                           |
+| core.peerAPort            | yes                      | "6000"                  | Sets the port that peer A has opened for connecting to the others                      |
+| core.peerBPort            | yes                      | "6000"                  | Sets the port that peer B has opened for connecting to the others                      |
 | core.cores                |                          | "1"                     | Number of cores the VDL node can use                                                   |
 | core.memory               |                          | "900M"                  | Number of Bytes of memory the VDL node can use                                         |
-| core.logLevel             |                          | "debug"                 | Sets the log level.                                                                    |
-| core.persistenceMode      |                          | "1"                     | If set to "1" or "true", store tables to disk (data survives server reboots).          |
-| core.dynamicConfigMode    |                          | "0"                     | If set to "1" or "true", enable dynamic config mode (required for approvals).          |
-| core.scriptSignMode       |                          | "0"                     | (legacy) If set to "1" or "true", enforces script sign mode.                           |
-| core.scriptSignKeys       |                          |                         | (legacy) If core.scriptSignMode has been set, select which keys are used.              |
-| secrets.selfsignedcaCrt   | yes                      |                         | The certificate authority used for each of the TLS keys.                               |
-| secrets.licenseKey        | yes                      |                         | License key necessary for using the Virtual Data Lake software.                        |
+| core.logLevel             |                          | "debug"                 | Sets the log level                                                                     |
+| core.persistenceMode      |                          | "1"                     | If set to "1" or "true", store tables to disk (data survives server reboots)           |
+| core.dynamicConfigMode    |                          | "0"                     | If set to "1" or "true", enable dynamic config mode (required for approvals)           |
+| core.scriptSignMode       |                          | "0"                     | (legacy) If set to "1" or "true", enforces script sign mode                            |
+| core.scriptSignKeys       |                          |                         | (legacy) If core.scriptSignMode has been set, select which keys are used               |
+| secrets.selfsignedcaCrt   | yes                      |                         | The certificate authority used for each of the TLS keys                                |
+| secrets.licenseKey        | yes                      |                         | License key necessary for using the Virtual Data Lake software                         |
 | secrets.httpd0Crt         | yes                      |                         |                                                                                        |
 | secrets.httpd0Key         | yes                      |                         |                                                                                        |
 | secrets.httpd1Crt         | yes                      |                         |                                                                                        |
@@ -94,11 +94,12 @@ During install, the following values should be specified or can be overridden:
 | secrets.sign0Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
 | secrets.sign1Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
 | secrets.sign2Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
-| vpnEnabled                |                          | false                   | If true, a VPN client sidecar is created to connect the VDL node to a VPN.             |
-| vpnConfigFile             | if `vpnEnabled`          |                         | Content of a .ovpn file, for connecting to an OpenVPN server.                          |
-| loggingEnabled            |                          | false                   | if true, a FileBeat sidecar is created to send the VDL logs to a Logbeat server.       |
-| elasticCloudID            | if `loggingEnabled`      |                         | Sets cloud.id in the filebeat config for connecting to Elastic Cloud.                  |
-| elasticCloudAuth          | if `loggingEnabled`      |                         | Sets cloud.auth in the filebeat config for connecting to Elastic Cloud.                |
+| vpnEnabled                |                          | false                   | If true, a VPN client sidecar is created to connect the VDL node to a VPN              |
+| vpnLogLevel               | if `vpnEnabled`          |                         | The verbosity of OpenVPN                                                               |
+| vpnConfigFile             | if `vpnEnabled`          |                         | Content of a .ovpn file, for connecting to an OpenVPN server                           |
+| loggingEnabled            |                          | false                   | if true, a FileBeat sidecar is created to send the VDL logs to a Logbeat server        |
+| elasticCloudID            | if `loggingEnabled`      |                         | Sets cloud.id in the filebeat config for connecting to Elastic Cloud                   |
+| elasticCloudAuth          | if `loggingEnabled`      |                         | Sets cloud.auth in the filebeat config for connecting to Elastic Cloud                 |
 | elasticIndex              | if `loggingEnabled`      | "onpremise"             | Sets the index name to which the filebeat will write its logs                          |
 | logstashHost              | if `loggingEnabled`      |                         | Host name/IP (add :port to override default 5044) of the logstash server to connect to |
 | loggingCaCrt              | if `loggingEnabled`      |                         | CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat   |
@@ -106,11 +107,11 @@ During install, the following values should be specified or can be overridden:
 | filebeatKey               | if `loggingEnabled`      |                         | Secret key belonging to the filebeatCrt certificate                                    |
 | podAnnotations            |                          | {}                      | sets extra pod annotations                                                             |
 | securityContext           |                          | {}                      | sets the securityContext                                                               |
-| serviceN2n.type           |                          | LoadBalancer            | sets the type of the service for node to node communication.                           |
-| serviceN2n.exposePort     |                          | 6000                    | sets the port with which other nodes can contact this node.                            |
-| serviceCrandas.enabled    |                          | true                    | If true, enables users to connect their Crandas environment to this node.              |
-| serviceCrandas.type       |                          | LoadBalancer            | sets the type of the service for connecting with Crandas.                              |
-| serviceCrandas.exposePort |                          | 9820                    | sets the port with which Crandas can connect.                                          |
+| serviceN2n.type           |                          | LoadBalancer            | sets the type of the service for node to node communication                            |
+| serviceN2n.exposePort     |                          | 6000                    | sets the port with which other nodes can contact this node                             |
+| serviceCrandas.enabled    |                          | true                    | If true, enables users to connect their Crandas environment to this node               |
+| serviceCrandas.type       |                          | LoadBalancer            | sets the type of the service for connecting with Crandas                               |
+| serviceCrandas.exposePort |                          | 9820                    | sets the port with which Crandas can connect                                           |
 | pvc.storageClassName      | yes                      |                         | provide the name or the storace class, cloud dependent                                 |
 | ingress.enabled           |                          | false                   | TODO add explanation for the ingress                                                   |
 | ingress.className         |                          | ""                      |                                                                                        |
@@ -125,9 +126,9 @@ The docker image recognizes the following parameters. Not all of these values ca
 
 | Name                 | Description                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------- |
-| NODE_NR              | Number in range \[0, 1, 2\], nodes should be deployed in descending order.         |
-| NODE_PEER_A_HOSTNAME | Hostname or IP address of peer a. Node 0 uses this to connect to Node 1.           |
-| NODE_PEER_B_HOSTNAME | Hostname or IP address of peer b. Node 0 and Node 1 use this to connect to node 2. |
+| NODE_NR              | Number in range \[0, 1, 2\], nodes should be deployed in descending order          |
+| NODE_PEER_A_HOSTNAME | Hostname or IP address of peer a; Node 0 uses this to connect to Node 1            |
+| NODE_PEER_B_HOSTNAME | Hostname or IP address of peer b; Node 0 and Node 1 use this to connect to node 2  |
 
 ## Optional environmental variables:
 
@@ -140,7 +141,7 @@ The docker image recognizes the following parameters. Not all of these values ca
 | NODE_BASE_HTTPS_PORT         |                                                                                                               |
 | NODE_BASE_PROMETHEUS_PORT    |                                                                                                               |
 | NODE_BASE_LIVENESS_PORT      |                                                                                                               |
-| NODE_VDL_PORT                | Port number that can be used to connect to this VDL instance.                                                 |
+| NODE_VDL_PORT                | Port number that can be used to connect to this VDL instance                                                  |
 | NODE_HTTPS_PORT              |                                                                                                               |
 | NODE_PEER_A_PORT             |                                                                                                               |
 | NODE_PEER_B_PORT             |                                                                                                               |
@@ -149,14 +150,14 @@ The docker image recognizes the following parameters. Not all of these values ca
 | NODE_SECRETS_DIR_INIT        |                                                                                                               |
 | NODE_SECRETS_DIR             |                                                                                                               |
 | NODE_STATE_PATH              |                                                                                                               |
-| NODE_PERSISTENCE_MODE        |  \[true\|false\], enables persistence mode.                                                                   |
+| NODE_PERSISTENCE_MODE        |  \[true\|false\], enables persistence mode                                                                    |
 | NODE_PORT_PER_CORE_MODE      |                                                                                                               |
-| NODE_SCRIPT_SIGN_MODE        | \[true\|false\], if set to true, only signed scripts can be executed.                                         |
-| NODE_SCRIPT_SIGN_KEYS        | Filenames script approver public keys. (NB: no chars from $IFS, such as spaces, are allowed in the filenames) |
+| NODE_SCRIPT_SIGN_MODE        | \[true\|false\], if set to true, only signed scripts can be executed                                          |
+| NODE_SCRIPT_SIGN_KEYS        | Filenames script approver public keys (NB: no chars from $IFS, such as spaces, are allowed in the filenames)  |
 | NODE_TCP_KEEPALIVE_COUNT     |                                                                                                               |
 | NODE_TCP_KEEPALIVE_IDLE      |                                                                                                               |
 | NODE_TCP_KEEPALIVE_INTERVAL  |                                                                                                               |
 | NODE_HEARTBEAT_PERIOD        |                                                                                                               |
 | NODE_HEARTBEAT_TIMEOUT_DELTA |                                                                                                               |
 | NODE_LOG_LEVEL               | Sets the log level \[debug etc.\]                                                                             |
-| NODE_AUX_FLAGS               | utility flag to add any flags not covered by the above.                                                       |
+| NODE_AUX_FLAGS               | utility flag to add any flags not covered by the above                                                        |
