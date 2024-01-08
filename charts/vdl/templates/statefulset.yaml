@@ -145,7 +145,7 @@ spec:
         {{- end }}
         {{- if .Values.vpnEnabled }}
         - name: openvpn-client
-          image: ghcr.io/wfg/openvpn-client
+          image: ghcr.io/wfg/openvpn-client:3.1.0
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - name: ephemeral
@@ -153,6 +153,8 @@ spec:
           env:
             - name: VPN_CONFIG_FILE
               value: client.ovpn
+            - name: VPN_LOG_LEVEL
+              value: {{ .Values.vpnLogLevel | quote }}
             - name: ALLOWED_SUBNETS
               value: 
             - name: AUTH_SECRET

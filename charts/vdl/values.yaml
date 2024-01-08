@@ -64,6 +64,9 @@ secrets:
 # vpnEnabled set to true will create a VPN client sidecar to connect the VDL node to a VPN
 vpnEnabled: false
 
+# vpnLogLevel is the verbosity level of OpenVPN
+vpnLogLevel: "3"
+
 # vpnConfigFile should contain the contents of a .ovpn file. It is used to connect the VPN client container to a VPN server
 vpnConfigFile:
 
