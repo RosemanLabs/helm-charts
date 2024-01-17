@@ -38,7 +38,7 @@ spec:
             optional: false
         {{- if .Values.loggingEnabled }}
         - name: vdl-logs
-          emptyDir: {} # TODO: add either PVC or sizeLimit
+          emptyDir: {} # FIXME: I prefer a proper PVC with a sizeLimit, as I find EmptyDir too unpredictable
         - name: filebeat-config
           configMap:
             name: {{ .Chart.Name }}-filebeat-config
@@ -74,8 +74,8 @@ spec:
               mountPath: /app/secrets
           {{- if .Values.loggingEnabled }}
             - name: vdl-logs
-              mountPath: /var/log/vdl/
-          command: [ "/bin/bash", "-c", "./runner.sh 2>&1 | tee /var/log/vdl/test.log" ]
+              mountPath: /var/log/vdl
+          command: [ "/bin/bash", "-c", "./runner.sh 2>&1 | tee -a /var/log/vdl/runner.log" ]
           {{- end }}
           env:
             - name: NODE_NR
@@ -130,7 +130,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - name: vdl-logs
-              mountPath: /var/log/vdl/
+              mountPath: /var/log/vdl
             - name: filebeat-config
               mountPath: /usr/share/filebeat/filebeat.yml
               subPath: filebeat.yml
@@ -140,7 +140,26 @@ spec:
             limits:
               memory: 100Mi # TODO: check if this is reasonable
             requests:
-              cpu: 10m
+              memory: 100Mi
+        - name: vdl-log-rotate
+          image: blacklabelops/logrotate:1.3
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: vdl-logs
+              mountPath: /var/log/vdl
+          env:
+            - name: LOGS_DIRECTORIES
+              value: /var/log/vdl
+            - name: LOGROTATE_SIZE
+              value: 1K # 1K for testing, once it works probably 10M
+            - name: LOGROTATE_COPIES
+              value: 4
+            - name: LOGROTATE_MODE
+              value: copytruncate
+          resources:
+            limits:
+              memory: 100Mi # TODO: check if this is reasonable
+            requests:
               memory: 100Mi
         {{- end }}
         {{- if .Values.vpnEnabled }}
