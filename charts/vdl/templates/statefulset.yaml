@@ -110,6 +110,8 @@ spec:
               value: {{ .Values.core.dynamicConfigMode | quote }}
             - name: NODE_DYNAMIC_CONFIG_FILE
               value: "config.json"
+            - name: NODE_DISK_ONLY
+              value: "1"
             - name: NODE_LOG_LEVEL
               value: {{ .Values.core.logLevel | quote }}
             - name: NODE_AUX_FLAGS
