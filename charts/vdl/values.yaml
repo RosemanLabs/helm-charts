@@ -31,6 +31,8 @@ core:
   # legacy properties:
   scriptSignMode: "0"
   scriptSignKeys:
+  maxCacheSize: 1000000000
+  maxCacheAge: 28800 # 8 hour default
 
 secrets:
   selfsignedcaCrt:

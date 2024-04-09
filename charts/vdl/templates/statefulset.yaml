@@ -114,6 +114,10 @@ spec:
               value: "1"
             - name: NODE_LOG_LEVEL
               value: {{ .Values.core.logLevel | quote }}
+            - name: NODE_MAX_CACHE_AGE
+              value: {{ .Values.core.maxCacheAge | quote }}
+            - name: NODE_MAX_CACHE_SIZE
+              value: {{ .Values.core.maxCacheSize | quote }}
             - name: NODE_AUX_FLAGS
               value: {{ .Values.core.auxFlags | quote }}
           livenessProbe:
