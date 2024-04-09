@@ -28,6 +28,8 @@ core:
   logLevel: "debug"
   persistenceMode: "1"
   dynamicConfigMode: "0"
+  maxCacheSize: 1000000000
+  maxCacheAge: 28800 # 8 hour default
   # legacy properties:
   scriptSignMode: "0"
   scriptSignKeys:
