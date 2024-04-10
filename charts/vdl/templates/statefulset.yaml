@@ -117,7 +117,7 @@ spec:
             - name: NODE_MAX_CACHE_AGE
               value: {{ .Values.core.maxCacheAge | quote }}
             - name: NODE_MAX_CACHE_SIZE
-              value: {{ .Values.core.maxCacheSize | quote }}
+              value: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
             - name: NODE_AUX_FLAGS
               value: {{ .Values.core.auxFlags | quote }}
           livenessProbe:
