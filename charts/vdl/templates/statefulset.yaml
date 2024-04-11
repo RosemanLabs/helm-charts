@@ -117,6 +117,9 @@ spec:
             - name: NODE_MAX_CACHE_AGE
               value: {{ .Values.core.maxCacheAge | quote }}
             - name: NODE_MAX_CACHE_SIZE
+            # This value needs the bytes suffix removed because of a bug in Helm
+            # where big numbers (even if they are quoted) are automatically converted
+            # to scientific notation. See: https://github.com/helm/helm/issues/1707
               value: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
             - name: NODE_AUX_FLAGS
               value: {{ .Values.core.auxFlags | quote }}

@@ -28,6 +28,9 @@ core:
   logLevel: "debug"
   persistenceMode: "1"
   dynamicConfigMode: "0"
+  # This value needs to be in bytes because of a bug in Helm
+  # that always converts big numbers to scientific notation.
+  # See: https://github.com/helm/helm/issues/1707
   maxCacheSize: "1000000000bytes"
   maxCacheAge: 28800 # 8 hour default
   # legacy properties:
