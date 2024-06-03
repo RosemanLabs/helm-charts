@@ -123,6 +123,7 @@ spec:
               value: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
             - name: NODE_AUX_FLAGS
               value: {{ .Values.core.auxFlags | quote }}
+          {{- if not .Values.vpnEnabled }}
           livenessProbe:
             tcpSocket:
               port: 4240
@@ -131,6 +132,7 @@ spec:
             periodSeconds: 30
             successThreshold: 1
             failureThreshold: 5
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         {{- if .Values.loggingEnabled }}
