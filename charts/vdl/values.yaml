@@ -32,6 +32,7 @@ core:
   logLevel: "debug"
   persistenceMode: "1"
   dynamicConfigMode: "0"
+  sni: "0"
   # This value needs to be in bytes because of a bug in Helm
   # that always converts big numbers to scientific notation.
   # See: https://github.com/helm/helm/issues/1707
@@ -40,7 +41,6 @@ core:
   # legacy properties:
   scriptSignMode: "0"
   scriptSignKeys:
-  sni: "0"
 
 secrets:
   selfsignedcaCrt:
