@@ -22,3 +22,26 @@ version: 1.7.2
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "v1.12.2"
+
+dependencies:
+- name: alloy
+  version: "0.6.0"
+  repository: "https://grafana.github.io/helm-charts"
+  condition: logging.enabled
+- name: loki
+  version: "6.7.3"
+  chart: loki
+  repository: "https://grafana.github.io/helm-charts"
+  condition: logging.isHost
+- name: grafana
+  version: "8.4.0"
+  repository: "https://grafana.github.io/helm-charts"
+  condition: logging.isHost
+  #- name: prometheus
+  #  version: 25.24.2
+  #  repository: "https://prometheus-community.github.io/helm-charts"
+  #  condition: logging.isHost
+  #- name: kube-prometheus-stack
+  #  version: "61.6.1"
+  #  repository: "https://prometheus-community.github.io/helm-charts"
+  #  condition: logging.isHost

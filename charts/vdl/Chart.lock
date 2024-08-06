@@ -1,0 +1,12 @@
+dependencies:
+- name: alloy
+  repository: https://grafana.github.io/helm-charts
+  version: 0.6.0
+- name: loki
+  repository: https://grafana.github.io/helm-charts
+  version: 6.7.3
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 8.4.0
+digest: sha256:8842c8efede9bd5f3f10e521693dcb2fdd06f9eec48c1e3fddf5fe1d449ed3b4
+generated: "2024-08-06T11:46:07.108718687+02:00"

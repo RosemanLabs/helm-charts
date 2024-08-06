@@ -82,6 +82,13 @@ vpnLogLevel: "3"
 vpnConfigFile:
 
 # loggingEnabled: if enabled, will create a FileBeat sidecar to read out the logs of the VDL node and send to a Logbeat server
+logging:
+  enabled: false
+  isHost: false
+  clusterName: ""
+  lokiEndpoint: __FILL_IN_URL_HERE__/loki/api/v1/push # 
+  namespace: "" #This namespace should be the same as the namespace you are deploying to
+
 loggingEnabled: false
 
 # elasticCloudID sets cloud.id in the filebeat config for connecting it to your elasticcloud
@@ -171,3 +178,38 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+loki:
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: 'filesystem'
+    schemaConfig:
+      configs:
+      - from: "2024-01-01"
+        store: tsdb
+        index:
+          prefix: loki_index_
+          period: 24h
+        object_store: filesystem # we're storing on filesystem so there's no real persistence here.
+        schema: v13
+  singleBinary:
+    replicas: 1
+  read:
+    replicas: 0
+  backend:
+    replicas: 0
+  write:
+    replicas: 0
+
+alloy:
+  alloy:
+    configMap:
+      create: false
+      name: alloy-config
+      key: config.alloy
+  controller:
+    type: "statefulset"
