@@ -81,36 +81,16 @@ vpnLogLevel: "3"
 # vpnConfigFile should contain the contents of a .ovpn file. It is used to connect the VPN client container to a VPN server
 vpnConfigFile:
 
-# loggingEnabled: if enabled, will create a FileBeat sidecar to read out the logs of the VDL node and send to a Logbeat server
+# logging.enabled: if enabled, will create a Grafana Alloy sidecar. NOTE: vpnEnabled must be true for this setup to work
 logging:
   enabled: false
   isHost: false
-  clusterName: ""
-  lokiEndpoint: __FILL_IN_URL_HERE__/loki/api/v1/push # 
-  namespace: "" #This namespace should be the same as the namespace you are deploying to
+  projectName: ""
+  lokiEndpoint: __FILL_IN_VPN_IP_HERE__:3100/loki/api/v1/push
 
-loggingEnabled: false
+lokiVpnConfigFile:
 
-# elasticCloudID sets cloud.id in the filebeat config for connecting it to your elasticcloud
-elasticCloudID:
-
-# elasticCloudAuth sets cloud.auth in the filebeat config for connecting it to your elasticcloud
-elasticCloudAuth:
-
-# elasticIndex sets the name of the index to which the filebeat will write its logs (default onpremise)
-elasticIndex: onpremise
-
-# Host name or IP address of the logstash server that the filebeat should connect to
-logstashHost:
-
-# CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat
-loggingCaCrt:
-
-# TLS certificate authenticating this Filebeat instance to the Rosemanlabs Logstash server
-filebeatCrt:
-
-# Secret key belonging to the filebeatCrt certificate
-filebeatKey:
+grafanaVpnConfigFile: 
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -196,6 +176,10 @@ loki:
           period: 24h
         object_store: filesystem # we're storing on filesystem so there's no real persistence here.
         schema: v13
+    podSecurityContext:
+      runAsNonRoot: false
+    containerSecurityContext:
+        allowPrivilegeEscalation: true
   singleBinary:
     replicas: 1
   read:
@@ -204,12 +188,104 @@ loki:
     replicas: 0
   write:
     replicas: 0
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  singleBinary:
+    initContainers:
+    - name: vpn-config-setup
+      image: "alpine:3.12"
+      command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
+      volumeMounts:
+        - name: vpnconfig
+          mountPath: /config
+        - name: loki-ephemeral
+          mountPath: /data/vpn
+    extraContainers:
+    - name: openvpn-client
+      image: ghcr.io/wfg/openvpn-client:3.1.0
+      imagePullPolicy: Always
+      volumeMounts:
+        - name: loki-ephemeral
+          mountPath: /data/vpn
+      env:
+        - name: VPN_CONFIG_FILE
+          value: client.ovpn
+        - name: VPN_LOG_LEVEL
+          value: "3"
+        - name: ALLOWED_SUBNETS
+          value: 
+        - name: AUTH_SECRET
+          value: 
+      securityContext: # It is necessary to set the user as root for the openvpn container, otherwise the container does not have sufficient permissions to access system files
+        runAsUser: 0
+        runAsGroup: 0
+        privileged: true
+        capabilities:
+          add:
+            - "NET_ADMIN"
+      resources:
+        limits:
+          memory: 100Mi # TODO: check if this is reasonable
+        requests:
+          cpu: 100m
+          memory: 100Mi
+    extraVolumes:
+    - name: loki-ephemeral
+      emptyDir:
+        sizeLimit: 20Mi
+    - name: vpnconfig
+      secret:
+        secretName: loki-vpn-config
+        optional: false
 
-alloy:
-  alloy:
-    configMap:
-      create: false
-      name: alloy-config
-      key: config.alloy
-  controller:
-    type: "statefulset"
+grafana:
+  securityContext:
+    runAsNonRoot: false
+  extraInitContainers:
+  - name: vpn-config-setup
+    image: "alpine:3.12"
+    command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
+    volumeMounts:
+      - name: vpnconfig
+        mountPath: /config
+      - name: grafana-ephemeral
+        mountPath: /data/vpn
+  extraContainerVolumes:
+  - name: grafana-ephemeral
+    emptyDir:
+      sizeLimit: 20Mi
+  - name: vpnconfig
+    secret:
+      secretName: grafana-vpn-config
+      optional: false
+  extraContainers: |
+    - name: openvpn-client
+      image: ghcr.io/wfg/openvpn-client:3.1.0
+      imagePullPolicy: Always
+      volumeMounts:
+        - name: grafana-ephemeral
+          mountPath: /data/vpn
+      env:
+        - name: VPN_CONFIG_FILE
+          value: client.ovpn
+        - name: VPN_LOG_LEVEL
+          value: "3"
+        - name: ALLOWED_SUBNETS
+          value: 
+        - name: AUTH_SECRET
+          value: 
+      securityContext: # It is necessary to set the user as root for the openvpn container, otherwise the container does not have sufficient permissions to access system files
+        runAsUser: 0
+        runAsGroup: 0
+        privileged: true
+        capabilities:
+          add:
+            - "NET_ADMIN"
+      resources:
+        limits:
+          memory: 100Mi # TODO: check if this is reasonable
+        requests:
+          cpu: 100m
+          memory: 100Mi

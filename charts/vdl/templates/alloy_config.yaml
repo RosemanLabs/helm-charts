@@ -23,7 +23,6 @@ data:
       role = "pod"
       namespaces {
         own_namespace = true
-        names = []
       }
       selectors {
         role = "Pod"
@@ -87,7 +86,7 @@ data:
     loki.process "pod_logs" {
       stage.static_labels {
           values = {
-            cluster = "{{- .Values.logging.clusterName }}",
+            project = "{{- .Values.logging.projectName }}",
           }
       }
 
