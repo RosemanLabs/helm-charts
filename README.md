@@ -52,7 +52,7 @@ With the following steps, you can setup your own VDL node:
             type: loki
             url: http://{{ LOKI_VPN_IP }}:3100
   ```
-  2. If your deployment contains either node1 or node2 then you must include the following override settings. Furthermore, it is important to deploy this chart into a namespace with a unique name, otherwise the prepared log dashboard will not find the correct logs. We suggest append the node number to the namespace, e.g. `vdl-example-1` for node 1.
+  2. If your deployment contains either node1 or node2 then you must include the following override settings. Furthermore, it is important to deploy this chart into a namespace with a unique name, otherwise the prepared log dashboard will not find the correct logs. We suggest appending the node number to the namespace, e.g. `vdl-example-1` for node 1.
   ```yaml
     logging:
       enabled: true

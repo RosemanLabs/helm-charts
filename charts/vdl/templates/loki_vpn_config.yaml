@@ -1,4 +1,4 @@
-{{- if .Values.vpnEnabled -}}
+{{- if .Values.logging.isHost -}}
 apiVersion: v1
 kind: Secret
 metadata:
