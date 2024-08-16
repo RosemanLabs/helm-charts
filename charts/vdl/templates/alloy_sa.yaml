@@ -1,4 +1,4 @@
-{{- if .Values.logging.enabled }}
+{{- if .Values.loggingEnabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: "alloy"
     app.kubernetes.io/part-of: alloy
     app.kubernetes.io/version: v1.3.0
-    helm.sh/chart: {{- .Chart.name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   name: "vdl-alloy-{{- .Values.core.nodeNr }}"
   namespace: "{{- .Release.Namespace }}"
 {{- end}}

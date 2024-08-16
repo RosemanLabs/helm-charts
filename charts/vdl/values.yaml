@@ -81,12 +81,13 @@ vpnLogLevel: "3"
 # vpnConfigFile should contain the contents of a .ovpn file. It is used to connect the VPN client container to a VPN server
 vpnConfigFile:
 
-# logging.enabled: if enabled, will create a Grafana Alloy sidecar. NOTE: vpnEnabled must be true for this setup to work
+# loggingEnabled: if enabled, will create a Grafana Alloy sidecar. NOTE: vpnEnabled must be true for this setup to work
+loggingEnabled: false
 logging:
-  enabled: false
   isHost: false
-  projectName: ""
   lokiEndpoint: __FILL_IN_VPN_IP_HERE__:3100/loki/api/v1/push
+  node1Namespace: ""
+  node2Namespace: ""
 
 lokiVpnConfigFile:
 
@@ -241,6 +242,28 @@ loki:
         optional: false
 
 grafana:
+  dashboardProviders:
+    loki_dashboardprovider.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'rosemanlabs'
+        orgId: 1
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/rosemanlabs
+  extraVolumes:
+  - name: loki-dashboard
+    configMap:
+      name: loki-dashboard
+      items:
+        - key: dashboard.json
+          path: dashboard.json
+  extraVolumeMounts:
+  - name: loki-dashboard
+    mountPath: /var/lib/grafana/dashboards/rosemanlabs
+
   securityContext:
     runAsNonRoot: false
   extraInitContainers:

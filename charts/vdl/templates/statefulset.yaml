@@ -73,7 +73,7 @@ spec:
             secretName: {{ .Chart.Name }}-secret-vdl
             defaultMode: 420
             optional: false
-        {{- if .Values.logging.enabled }}
+        {{- if .Values.loggingEnabled }}
         - name: alloy-config
           configMap:
             name: alloy-config
@@ -161,7 +161,7 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-        {{- if .Values.logging.enabled }}
+        {{- if .Values.loggingEnabled }}
         - name: vdl-log-collector
           image: grafana/alloy:v1.2.1
           imagePullPolicy: Always
