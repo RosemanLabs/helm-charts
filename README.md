@@ -64,8 +64,8 @@ With the following steps, you can setup your own VDL node:
 ./deploy_single_node.sh [-c <engine_openvpn_file>] [-l <loki_openvpn_file>] [-g <grafana_openvpn_file>] <namespace> <override_file> <override_secrets_dir>
 ```
   - `-c <engine_openvpn_file>`: VPN configuration _(optional)_
-  - `-l <loki_openvpn_file>`: VPN configuration _(required to make the logging stack work)_
-  - `-g <grafana_openvpn_file>`: VPN configuration _(required to make the logging stack work)_
+  - `-l <loki_openvpn_file>`: VPN configuration _(required to make the logging stack work, required for Loki/Grafana host)_
+  - `-g <grafana_openvpn_file>`: VPN configuration _(required to make the logging stack work, required for Loki/Grafana)_
   - `<namespace>`: Kubernetes namespace where the objects will be created
   - `<override_file>`: the name of the previously created override file
   - `<override_secrets_dir>`: the name of the directory that stores the generated (override) key material

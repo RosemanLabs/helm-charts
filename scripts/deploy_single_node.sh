@@ -166,7 +166,7 @@ if [[ $num_approvers -gt 0 ]]; then
 fi
 
 grep -qP '(?<=vpnEnabled: )true' "$override_file" && vpn_enabled=1 || vpn_enabled=0
-grep -qP '(?<=loggingEnabled: )true' "$override_file" && send_logs_enabled=1 || send_logs_enabled=0
+grep -qP '(?<=isHost: )true' "$override_file" && receive_logs_enabled=1 || receive_logs_enabled=0
 
 if [[ "$vpn_enabled" -eq 1 ]]; then
   if ! [ -r "$vpn_config_file" ]; then
@@ -176,7 +176,7 @@ if [[ "$vpn_enabled" -eq 1 ]]; then
 	install_params+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
 fi
 
-if [[ "$send_logs_enabled" -eq 1 ]]; then
+if [[ "$receive_logs_enabled" -eq 1 ]]; then
   if [[ "$vpn_enabled" -eq 0 ]]; then
     die "Logging is enabled but VPN is disabled. VPN is a requirement for logging to work."
   fi
