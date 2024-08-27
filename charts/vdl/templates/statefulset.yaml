@@ -1,3 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: engine-node-{{ .Values.core.nodeNr }}-envs
+data:
+  NODE_NR:   {{ .Values.core.nodeNr | quote }}
+  NODE_PEER_A_HOSTNAME:   {{ .Values.core.peerAHostname | quote }}
+  NODE_PEER_B_HOSTNAME:   {{ .Values.core.peerBHostname | quote }}
+  NODE_PEER_A_PORT:   {{ .Values.core.peerAPort | quote }}
+  NODE_PEER_B_PORT:   {{ .Values.core.peerBPort | quote }}
+  NODE_VDL_PORT: "6000"
+  NODE_HTTPS_PORT: "9820"
+  NODE_LIVENESS_PORT: "4240"
+  NODE_CORES:   {{ .Values.core.cores | quote }}
+  NODE_USE_SNI: {{ .Values.core.sni | quote }}
+  NODE_PORT_PER_CORE_MODE: "1"
+  NODE_MEMORY: {{ .Values.core.memory | quote }}
+  {{- if .Values.core.scriptSignMode }}
+  NODE_SCRIPT_SIGN_MODE: {{ .Values.core.scriptSignMode | quote }}
+  {{- end }}
+  {{- if .Values.core.scriptSignKeys }}
+  NODE_SCRIPT_SIGN_KEYS: {{ .Values.core.scriptSignKeys | quote }}
+  {{- end }}
+  NODE_PERSISTENCE_MODE: {{ .Values.core.persistenceMode | quote }}
+  NODE_DYNAMIC_CONFIG_MODE: {{ .Values.core.dynamicConfigMode | quote }}
+  NODE_DYNAMIC_CONFIG_FILE: "config.json"
+  NODE_DISK_ONLY: "1"
+  NODE_LOG_LEVEL: {{ .Values.core.logLevel | quote }}
+  NODE_MAX_CACHE_AGE: {{ .Values.core.maxCacheAge | quote }}
+  # This value needs the bytes suffix removed because of a bug in Helm
+  # where big numbers (even if they are quoted) are automatically converted
+  # to scientific notation. See: https://github.com/helm/helm/issues/1707
+  NODE_MAX_CACHE_SIZE: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
+  {{- if .Values.core.auxFlags }}
+  NODE_AUX_FLAGS: {{ .Values.core.auxFlags | quote }}
+  {{- end }}
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -77,52 +114,9 @@ spec:
               mountPath: /var/log/vdl/
           command: [ "/bin/bash", "-c", "./runner.sh 2>&1 | tee /var/log/vdl/test.log" ]
           {{- end }}
-          env:
-            - name: NODE_NR
-              value: {{ .Values.core.nodeNr | quote }}
-            - name: NODE_PEER_A_HOSTNAME
-              value: {{ .Values.core.peerAHostname | quote }}
-            - name: NODE_PEER_B_HOSTNAME
-              value: {{ .Values.core.peerBHostname | quote }}
-            - name: NODE_PEER_A_PORT
-              value: {{ .Values.core.peerAPort | quote }}
-            - name: NODE_PEER_B_PORT
-              value: {{ .Values.core.peerBPort | quote }}
-            - name: NODE_VDL_PORT
-              value: "6000"
-            - name: NODE_HTTPS_PORT
-              value: "9820"
-            - name: NODE_LIVENESS_PORT
-              value: "4240"
-            - name: NODE_CORES
-              value: {{ .Values.core.cores | quote }}
-            - name: NODE_PORT_PER_CORE_MODE
-              value: "1"
-            - name: NODE_MEMORY
-              value: {{ .Values.core.memory | quote }}
-            - name: NODE_SCRIPT_SIGN_MODE
-              value: {{ .Values.core.scriptSignMode | quote }}
-            - name: NODE_SCRIPT_SIGN_KEYS
-              value: {{ .Values.core.scriptSignKeys | quote }}
-            - name: NODE_PERSISTENCE_MODE
-              value: {{ .Values.core.persistenceMode | quote }}
-            - name: NODE_DYNAMIC_CONFIG_MODE
-              value: {{ .Values.core.dynamicConfigMode | quote }}
-            - name: NODE_DYNAMIC_CONFIG_FILE
-              value: "config.json"
-            - name: NODE_DISK_ONLY
-              value: "1"
-            - name: NODE_LOG_LEVEL
-              value: {{ .Values.core.logLevel | quote }}
-            - name: NODE_MAX_CACHE_AGE
-              value: {{ .Values.core.maxCacheAge | quote }}
-            - name: NODE_MAX_CACHE_SIZE
-            # This value needs the bytes suffix removed because of a bug in Helm
-            # where big numbers (even if they are quoted) are automatically converted
-            # to scientific notation. See: https://github.com/helm/helm/issues/1707
-              value: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
-            - name: NODE_AUX_FLAGS
-              value: {{ .Values.core.auxFlags | quote }}
+          envFrom:
+            - configMapRef:
+                name: engine-node-{{ .Values.core.nodeNr }}-envs
           {{- if not .Values.vpnEnabled }}
           livenessProbe:
             tcpSocket:
@@ -209,6 +203,20 @@ spec:
               subPath: web_app.pk
             - name: dynamic-config
               mountPath: /config
+      {{- end }}
+      {{- if .Values.healthContainer.enabled }}
+        - name: health
+          image: "{{ .Values.healthContainer.repository }}:{{ .Values.healthContainer.tag }}"
+          envFrom:
+            - configMapRef:
+                name: engine-node-{{ .Values.core.nodeNr }}-envs
+          volumeMounts:
+            - name: persistence
+              mountPath: /app/data
+            - name: dynamic-config
+              mountPath: /app/config
+            - name: secrets
+              mountPath: /app/secrets
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

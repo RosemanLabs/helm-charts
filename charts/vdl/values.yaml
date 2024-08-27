@@ -9,10 +9,15 @@ image:
   tag: ""
 imageCredentials:
   name: creds-pull
-  registry: ghcr.io/rosemanlabs/vdl
+  registry: ghcr.io/rosemanlabs
   username:
   password: 
   email: ""
+
+healthContainer:
+  enabled: false
+  repository: ghcr.io/rosemanlabs/engine-healthcontainer
+  tag: "v0.1.1"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -28,6 +33,7 @@ core:
   logLevel: "debug"
   persistenceMode: "1"
   dynamicConfigMode: "0"
+  sni: "0"
   # This value needs to be in bytes because of a bug in Helm
   # that always converts big numbers to scientific notation.
   # See: https://github.com/helm/helm/issues/1707
