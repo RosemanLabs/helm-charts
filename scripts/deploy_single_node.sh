@@ -195,7 +195,6 @@ fi
 
 set -x
 helm repo update
-#helm template vdl "${install_params[@]}"
 helm upgrade --install vdl "${install_params[@]}"
 { set +x; } 2>&-
 rm -rf "$tmpdir"

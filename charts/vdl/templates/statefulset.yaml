@@ -171,7 +171,7 @@ spec:
               subPath: config.alloy
           resources:
             limits:
-              memory: 100Mi # TODO: check if this is reasonable
+              memory: 100Mi
             requests:
               cpu: 10m
               memory: 100Mi
@@ -199,7 +199,7 @@ spec:
                - "NET_ADMIN"
           resources:
             limits:
-              memory: 100Mi # TODO: check if this is reasonable
+              memory: 100Mi
             requests:
               cpu: 100m
               memory: 100Mi

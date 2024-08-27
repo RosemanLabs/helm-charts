@@ -86,7 +86,7 @@ data:
     loki.process "pod_logs" {
       stage.static_labels {
           values = {
-            project = "{{- .Values.logging.projectName }}",
+            logsFrom = "{{- .Values.logging.from }}",
           }
       }
 

@@ -53,7 +53,7 @@ data:
             {
               "datasource": "Loki",
               "editorMode": "builder",
-              "expr": "{namespace=\"{{- .Values.logging.node2Namespace}}\", container=\"vdl\"} |= ``",
+              "expr": "{logsFrom=\"{{- .Values.logging.fromNode2}}\", container=\"vdl\"} |= ``",
               "queryType": "range",
               "refId": "A"
             }
@@ -85,7 +85,7 @@ data:
             {
               "datasource": "Loki",
               "editorMode": "builder",
-              "expr": "{namespace=\"{{- .Values.logging.node1Namespace }}\", container=\"vdl\"} |= ``",
+              "expr": "{logsFrom=\"{{- .Values.logging.fromNode1 }}\", container=\"vdl\"} |= ``",
               "queryType": "range",
               "refId": "A"
             }
@@ -117,7 +117,7 @@ data:
             {
               "datasource": "Loki",
               "editorMode": "builder",
-              "expr": "{namespace=\"{{- .Release.Namespace }}\", container=\"vdl\"} |= ``",
+              "expr": "{logsFrom=\"{{- .Values.logging.fromHost }}\", container=\"vdl\"} |= ``",
               "queryType": "range",
               "refId": "A"
             }

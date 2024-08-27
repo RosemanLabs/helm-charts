@@ -35,14 +35,15 @@ With the following steps, you can setup your own VDL node:
   3. Grafana (the dashboarding tool) needs it's own vpn config. Otherwise the logs that have been forwarded to Loki cannot be accessed.
 
 6. Once the VPN has been set up you need to set the following values in your specific override file. 
-  1. If your deployment contains node0 then you must include the following override settings. Setting `isHost` to `true` will deploy Loki and Grafana in the same namespace as the engine (vdl) pod.
+  1. If your deployment contains node0 then you must include the following override settings. Setting `isHost` to `true` will deploy Loki and Grafana in the same namespace as the engine (vdl) pod. You also must set a unique label in `logging.fromHost` to differentiate your own logs from the logs of the other nodes.
   ```yaml
     logging:
       enabled: true
       isHost: true
       lokiEndpoint: http://{{ LOKI_VPN_IP }}:3100/loki/api/v1/push
-      node1Namespace:  # This label will need to be sent to you by the admin of node1
-      node2Namespace:  # This label will need to be sent to you by the admin of node2
+      fromNode1: "" # This label will need to be sent to you by the admin of node1
+      fromNode2: "" # This label will need to be sent to you by the admin of node2
+      fromHost: ""  # You will need to set a unique label here
     # The following settings are necessary to ensure that the preconfigured log dashboard connects to the right Loki instance. It is also possible to configure it by hand, but including these values will ensure that is deploys correctly.
     grafana:
       datasources:
@@ -52,12 +53,13 @@ With the following steps, you can setup your own VDL node:
             type: loki
             url: http://{{ LOKI_VPN_IP }}:3100
   ```
-  2. If your deployment contains either node1 or node2 then you must include the following override settings. Furthermore, it is important to deploy this chart into a namespace with a unique name, otherwise the prepared log dashboard will not find the correct logs. We suggest appending the node number to the namespace, e.g. `vdl-example-1` for node 1.
+  2. If your deployment contains either node1 or node2 then you must include the following override settings. Furthermore, it is important to set a unique name in the `logging.from` value, otherwise the prepared log dashboard will not find the correct logs. We suggest appending the node number to the namespace, e.g. `vdl-example-1` for node 1.
   ```yaml
     logging:
       enabled: true
       isHost: false
       lokiEndpoint: http://{{ LOKI_VPN_IP }}:3100/loki/api/v1/push
+      from: "" # Set a unique label name here
 ```
 6. Run the `deploy_single_node.sh` script with the following format:
 ```
