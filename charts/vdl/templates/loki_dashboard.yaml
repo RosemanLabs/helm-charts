@@ -53,12 +53,12 @@ data:
             {
               "datasource": "Loki",
               "editorMode": "builder",
-              "expr": "{logsFrom=\"{{- .Values.logging.fromNode2}}\", container=\"vdl\"} |= ``",
+              "expr": "{node_nr=\"2\", container=\"vdl\"} |= ``",
               "queryType": "range",
               "refId": "A"
             }
           ],
-          "title": "Engine logs node2",
+          "title": "Engine logs Node2",
           "type": "logs"
         },
         {
@@ -85,12 +85,12 @@ data:
             {
               "datasource": "Loki",
               "editorMode": "builder",
-              "expr": "{logsFrom=\"{{- .Values.logging.fromNode1 }}\", container=\"vdl\"} |= ``",
+              "expr": "{node_nr=\"1\", container=\"vdl\"} |= ``",
               "queryType": "range",
               "refId": "A"
             }
           ],
-          "title": "Engine logs node1",
+          "title": "Engine logs Node 1",
           "type": "logs"
         },
         {
@@ -117,12 +117,12 @@ data:
             {
               "datasource": "Loki",
               "editorMode": "builder",
-              "expr": "{logsFrom=\"{{- .Values.logging.fromHost }}\", container=\"vdl\"} |= ``",
+              "expr": "{node_nr=\"0\", container=\"vdl\"} |= ``",
               "queryType": "range",
               "refId": "A"
             }
           ],
-          "title": "Engine logs node0",
+          "title": "Engine logs Node 0",
           "type": "logs"
         }
       ],
