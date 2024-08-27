@@ -15,6 +15,7 @@ imageCredentials:
   email: ""
 
 healthContainer:
+  enabled: false
   repository: ghcr.io/rosemanlabs/engine-healthcontainer
   tag: "v0.1.1"
 

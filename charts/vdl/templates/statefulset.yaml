@@ -204,6 +204,7 @@ spec:
             - name: dynamic-config
               mountPath: /config
       {{- end }}
+      {{- if .Values.healthContainer.enabled }}
         - name: health
           image: "{{ .Values.healthContainer.repository }}:{{ .Values.healthContainer.tag }}"
           envFrom:
@@ -216,6 +217,7 @@ spec:
               mountPath: /app/config
             - name: secrets
               mountPath: /app/secrets
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
