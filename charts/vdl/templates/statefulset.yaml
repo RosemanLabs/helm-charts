@@ -209,7 +209,7 @@ spec:
       initContainers:
       {{- if .Values.vpnEnabled }}
         - name: vpn-config-setup
-          image: "alpine:3.12"
+          image: "ghcr.io/rosemanlabs/images/alpine:3.20.1"
           command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
           volumeMounts:
             - name: vpnconfig
