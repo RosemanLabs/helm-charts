@@ -117,6 +117,8 @@ During install, the following values should be specified or can be overridden:
 | ingress.className         |                          | ""                      |                                                                                        |
 | annotations               |                          | {}                      |                                                                                        |
 | hosts                     |                          |                         |                                                                                        |
+| externalDns.target        | if externalDns.enabled   |                         | The target IP for the DNS record                                                       |
+| externalDns.host          | if externalDns.enabled   |                         | The hostname for the DNS record                                                        |
 
 # appendix II: values recognized by docker image
 

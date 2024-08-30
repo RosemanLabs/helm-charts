@@ -21,6 +21,12 @@ metadata:
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
+    {{ if .Values.externalDns.enabled }}
+    external-dns.alpha.kubernetes.io/target: {{ .Values.externalDns.target }}
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+    external-dns.alpha.kubernetes.io/ttl: 30
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.externalDns.host }}
+    {{ end }}
   {{- end }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
