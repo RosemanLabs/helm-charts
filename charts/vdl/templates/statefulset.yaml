@@ -162,6 +162,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         {{- if .Values.loggingEnabled }}
+        {{- required "A valid VPN setup is required for logging to be enabled" .Values.vpnEnabled }}
         - name: vdl-log-collector
           image: grafana/alloy:v1.2.1
           imagePullPolicy: Always

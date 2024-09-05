@@ -85,7 +85,7 @@ vpnConfigFile:
 loggingEnabled: false
 logging:
   isHost: false
-  lokiEndpoint: __FILL_IN_VPN_IP_HERE__:3100/loki/api/v1/push
+  lokiEndpoint: "" #__FILL_IN_VPN_IP_HERE__:3100/loki/api/v1/push
   node1Namespace: ""
   node2Namespace: ""
 

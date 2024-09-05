@@ -1,4 +1,5 @@
 {{- if .Values.loggingEnabled -}}
+{{- required "A valid VPN setup is required for logging to be enabled" .Values.vpnEnabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,7 +14,7 @@ data:
 
     loki.write "default" {
       endpoint {
-        url = "{{- .Values.logging.lokiEndpoint }}"
+        url = "{{- required "Please pass an endpoint to logging.lokiEndpoint in your override file" .Values.logging.lokiEndpoint }}"
       }
     }
 

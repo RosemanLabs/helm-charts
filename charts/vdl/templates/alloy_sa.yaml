@@ -1,4 +1,5 @@
 {{- if .Values.loggingEnabled }}
+{{- required "A valid VPN setup is required for logging to be enabled" .Values.vpnEnabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
