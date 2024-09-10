@@ -1,0 +1,18 @@
+{{- if .Values.loggingEnabled }}
+{{- required "A valid VPN setup is required for logging to be enabled" .Values.vpnEnabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    meta.helm.sh/release-namespace: "{{- .Release.Namespace }}"
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/instance: vdl
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: "alloy"
+    app.kubernetes.io/part-of: alloy
+    app.kubernetes.io/version: v1.3.0
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  name: "vdl-alloy-{{- .Values.core.nodeNr }}"
+  namespace: "{{- .Release.Namespace }}"
+{{- end}}

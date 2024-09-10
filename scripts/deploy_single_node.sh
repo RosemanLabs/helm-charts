@@ -33,7 +33,7 @@ delete_namespace=false
 
 USAGE_STRING="usage: $0 [-h][-c <vpnconfig.ovpn>][-t <filebeat_tls_certs_dir>][-p <chart.tgz>][-f] <namespace> <override_file> <secrets_dir>"
 
-while getopts 'hfp:c:t:' opt; do
+while getopts 'hfp:c:l:g:t:' opt; do
   case "$opt" in
     h)
       help
@@ -49,6 +49,18 @@ while getopts 'hfp:c:t:' opt; do
       vpn_config_file=$OPTARG
       if [[ ! -f "$vpn_config_file" ]]; then
 		    die "$vpn_config_file vpn config file does not exist"
+      fi
+      ;;
+    l)
+      loki_vpn_config_file=$OPTARG
+      if [[ ! -f "$loki_vpn_config_file" ]]; then
+		    die "$loki_vpn_config_file vpn config file does not exist"
+      fi
+      ;;
+    g)
+      grafana_vpn_config_file=$OPTARG
+      if [[ ! -f "$grafana_vpn_config_file" ]]; then
+		    die "$grafana_vpn_config_file vpn config file does not exist"
       fi
       ;;
     t)
@@ -154,7 +166,7 @@ if [[ $num_approvers -gt 0 ]]; then
 fi
 
 grep -qP '(?<=vpnEnabled: )true' "$override_file" && vpn_enabled=1 || vpn_enabled=0
-grep -qP '(?<=loggingEnabled: )true' "$override_file" && send_logs_enabled=1 || send_logs_enabled=0
+grep -qP '(?<=isHost: )true' "$override_file" && receive_logs_enabled=1 || receive_logs_enabled=0
 
 if [[ "$vpn_enabled" -eq 1 ]]; then
   if ! [ -r "$vpn_config_file" ]; then
@@ -164,18 +176,21 @@ if [[ "$vpn_enabled" -eq 1 ]]; then
 	install_params+=( --set-file "vpnConfigFile=$tmpdir/vpnconf.ovpn.b64" )
 fi
 
-if [[ "$send_logs_enabled" -eq 1 ]]; then
-  if [[ -z "$filebeat_tls_certs_dir" ]]; then
-    filebeat_tls_certs_dir="$secrets_dir"
-    echo "No option -t </path/to/filebeat/tls/certs/> was provided, we assume tls certs are present in the default secrets directory"
-	fi
-  base64 -w0 < "$filebeat_tls_certs_dir"/filebeat-client.key > "$tmpdir/filebeat-client.key.b64"
-  base64 -w0 < "$filebeat_tls_certs_dir"/filebeat-client.crt > "$tmpdir/filebeat-client.crt.b64"
-  base64 -w0 < "$filebeat_tls_certs_dir"/logging-ca.crt > "$tmpdir/logging-ca.crt.b64"
+if [[ "$receive_logs_enabled" -eq 1 ]]; then
+  if [[ "$vpn_enabled" -eq 0 ]]; then
+    die "Logging is enabled but VPN is disabled. VPN is a requirement for logging to work."
+  fi
+  if ! [ -r "$loki_vpn_config_file" ]; then
+    die "Logging enabled but loki_vpn_config_file(='$loki_vpn_config_file') not defined/found"
+  fi
+  if ! [ -r "$grafana_vpn_config_file" ]; then
+    die "Logging enabled but grafana_vpn_config_file(='$grafana_vpn_config_file') not defined/found"
+  fi
 
-	install_params+=( --set-file "filebeatKey=$tmpdir/filebeat-client.key.b64" )
-  install_params+=( --set-file "filebeatCrt=$tmpdir/filebeat-client.crt.b64" )
-  install_params+=( --set-file "loggingCaCrt=$tmpdir/logging-ca.crt.b64" )
+	base64 -w0 < "$loki_vpn_config_file" > "$tmpdir/loki_vpnconf.ovpn.b64"
+	install_params+=( --set-file "lokiVpnConfigFile=$tmpdir/loki_vpnconf.ovpn.b64" )
+	base64 -w0 < "$grafana_vpn_config_file" > "$tmpdir/grafana_vpnconf.ovpn.b64"
+	install_params+=( --set-file "grafanaVpnConfigFile=$tmpdir/grafana_vpnconf.ovpn.b64" )
 fi
 
 set -x

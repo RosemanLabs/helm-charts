@@ -58,7 +58,7 @@ spec:
     spec:
       imagePullSecrets:
       - name: {{ .Values.imageCredentials.name }}
-      serviceAccountName: {{ include "vdl.serviceAccountName" . }}
+      serviceAccountName: "vdl-alloy-{{- .Values.core.nodeNr }}" #{{ include "vdl.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
@@ -74,19 +74,13 @@ spec:
             defaultMode: 420
             optional: false
         {{- if .Values.loggingEnabled }}
-        - name: vdl-logs
-          emptyDir: {} # TODO: add either PVC or sizeLimit
-        - name: filebeat-config
+        - name: alloy-config
           configMap:
-            name: {{ .Chart.Name }}-filebeat-config
+            name: alloy-config
             items:
-              - key: filebeat.yml
-                path: filebeat.yml
-        - name: filebeat-certs
-          secret:
-            secretName: {{ .Chart.Name }}-filebeat-tls-secrets
-            optional: false
-        {{- end }}
+              - key: config.alloy
+                path: config.alloy
+        {{- end}}
         {{- if .Values.vpnEnabled }}
         - name: ephemeral
           emptyDir:
@@ -109,14 +103,52 @@ spec:
               mountPath: /app/config
             - name: secrets
               mountPath: /app/secrets
-          {{- if .Values.loggingEnabled }}
-            - name: vdl-logs
-              mountPath: /var/log/vdl/
-          command: [ "/bin/bash", "-c", "./runner.sh 2>&1 | tee /var/log/vdl/test.log" ]
-          {{- end }}
-          envFrom:
-            - configMapRef:
-                name: engine-node-{{ .Values.core.nodeNr }}-envs
+          env:
+            - name: NODE_NR
+              value: {{ .Values.core.nodeNr | quote }}
+            - name: NODE_PEER_A_HOSTNAME
+              value: {{ .Values.core.peerAHostname | quote }}
+            - name: NODE_PEER_B_HOSTNAME
+              value: {{ .Values.core.peerBHostname | quote }}
+            - name: NODE_PEER_A_PORT
+              value: {{ .Values.core.peerAPort | quote }}
+            - name: NODE_PEER_B_PORT
+              value: {{ .Values.core.peerBPort | quote }}
+            - name: NODE_VDL_PORT
+              value: "6000"
+            - name: NODE_HTTPS_PORT
+              value: "9820"
+            - name: NODE_LIVENESS_PORT
+              value: "4240"
+            - name: NODE_CORES
+              value: {{ .Values.core.cores | quote }}
+            - name: NODE_PORT_PER_CORE_MODE
+              value: "1"
+            - name: NODE_MEMORY
+              value: {{ .Values.core.memory | quote }}
+            - name: NODE_SCRIPT_SIGN_MODE
+              value: {{ .Values.core.scriptSignMode | quote }}
+            - name: NODE_SCRIPT_SIGN_KEYS
+              value: {{ .Values.core.scriptSignKeys | quote }}
+            - name: NODE_PERSISTENCE_MODE
+              value: {{ .Values.core.persistenceMode | quote }}
+            - name: NODE_DYNAMIC_CONFIG_MODE
+              value: {{ .Values.core.dynamicConfigMode | quote }}
+            - name: NODE_DYNAMIC_CONFIG_FILE
+              value: "config.json"
+            - name: NODE_DISK_ONLY
+              value: "1"
+            - name: NODE_LOG_LEVEL
+              value: {{ .Values.core.logLevel | quote }}
+            - name: NODE_MAX_CACHE_AGE
+              value: {{ .Values.core.maxCacheAge | quote }}
+            - name: NODE_MAX_CACHE_SIZE
+            # This value needs the bytes suffix removed because of a bug in Helm
+            # where big numbers (even if they are quoted) are automatically converted
+            # to scientific notation. See: https://github.com/helm/helm/issues/1707
+              value: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
+            - name: NODE_AUX_FLAGS
+              value: {{ .Values.core.auxFlags | quote }}
           {{- if not .Values.vpnEnabled }}
           livenessProbe:
             tcpSocket:
@@ -130,20 +162,17 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         {{- if .Values.loggingEnabled }}
+        {{- required "A valid VPN setup is required for logging to be enabled" .Values.vpnEnabled }}
         - name: vdl-log-collector
-          image: docker.elastic.co/beats/filebeat:8.8.1
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: grafana/alloy:v1.2.1
+          imagePullPolicy: Always
           volumeMounts:
-            - name: vdl-logs
-              mountPath: /var/log/vdl/
-            - name: filebeat-config
-              mountPath: /usr/share/filebeat/filebeat.yml
-              subPath: filebeat.yml
-            - name: filebeat-certs
-              mountPath: /etc/certs
+            - name: alloy-config
+              mountPath: /etc/alloy/config.alloy
+              subPath: config.alloy
           resources:
             limits:
-              memory: 100Mi # TODO: check if this is reasonable
+              memory: 100Mi
             requests:
               cpu: 10m
               memory: 100Mi
@@ -171,7 +200,7 @@ spec:
                - "NET_ADMIN"
           resources:
             limits:
-              memory: 100Mi # TODO: check if this is reasonable
+              memory: 100Mi
             requests:
               cpu: 100m
               memory: 100Mi
@@ -181,7 +210,7 @@ spec:
       initContainers:
       {{- if .Values.vpnEnabled }}
         - name: vpn-config-setup
-          image: "alpine:3.12"
+          image: "ghcr.io/rosemanlabs/images/alpine:3.20.1"
           command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
           volumeMounts:
             - name: vpnconfig
