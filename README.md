@@ -72,77 +72,82 @@ With the following steps, you can setup your own VDL node:
 
 During install, the following values should be specified or can be overridden:
 
-| Name                      | Required                           | Default                 | Explanation                                                                                                           |
-| ------------------------- | --------------------------------   | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| image.repository          |                                    | ghcr.io/rosemanlabs/vdl | Repository to pull the VDL image from                                                                                 |
-| image.pullPolicy          |                                    | Always                  | sets the pull policiy for all images                                                                                  |
-| image.tag                 |                                    |                         | Overrides the default app version tag                                                                                 |
-| imageCredentials.name     | yes                                |                         | "name of the credentials used to pull the images                                                                      |
-| imageCredentials.registry |                                    | ghcr.io/rosemanlabs/vdl | Image registry the credentials belong to                                                                              |
-| imageCredentials.username | yes                                |                         | Username needed for pulling the image                                                                                 |
-| imageCredentials.password | yes                                |                         | Password or PAT needed for pulling the image                                                                          |
-| imageCredentials.email    |                                    | ""                      | Email belonging to the image credentials                                                                              |
-| nameOverride              |                                    | ""                      | Overrides part of the fully qualified app name with which to reach the node                                           |
-| fullnameOverride          |                                    | ""                      | Overrides the default fully qualified app name with which to reach the node                                           |
-| core.nodeNr               | yes                                |                         | Number in range \[0, 1, 2\], nodes should be deployed in descending order                                             |
-| core.peerAHostname        | yes                                | "tbd"                   | Sets the hostname or URL at which peer A should be reachable                                                          |
-| core.peerBHostname        | yes                                | "tbd"                   | Sets the hostname or URL at which peer B should be reachable                                                          |
-| core.peerAPort            | yes                                | "6000"                  | Sets the port that peer A has opened for connecting to the others                                                     |
-| core.peerBPort            | yes                                | "6000"                  | Sets the port that peer B has opened for connecting to the others                                                     |
-| core.cores                |                                    | "1"                     | Number of cores the VDL node can use                                                                                  |
-| core.memory               |                                    | "900M"                  | Number of Bytes of memory the VDL node can use                                                                        |
-| core.logLevel             |                                    | "debug"                 | Sets the log level                                                                                                    |
-| core.persistenceMode      |                                    | "1"                     | If set to "1" or "true", store tables to disk (data survives server reboots)                                          |
-| core.dynamicConfigMode    |                                    | "0"                     | If set to "1" or "true", enable dynamic config mode (required for approvals)                                          |
-| core.scriptSignMode       |                                    | "0"                     | (legacy) If set to "1" or "true", enforces script sign mode                                                           |
-| core.scriptSignKeys       |                                    |                         | (legacy) If core.scriptSignMode has been set, select which keys are used                                              |
-| secrets.selfsignedcaCrt   | yes                                |                         | The certificate authority used for each of the TLS keys                                                               |
-| secrets.licenseKey        | yes                                |                         | License key necessary for using the Virtual Data Lake software                                                        |
-| secrets.httpd0Crt         | yes                                |                         |                                                                                                                       |
-| secrets.httpd0Key         | yes                                |                         |                                                                                                                       |
-| secrets.httpd1Crt         | yes                                |                         |                                                                                                                       |
-| secrets.httpd1Key         | yes                                |                         |                                                                                                                       |
-| secrets.httpd2Crt         | yes                                |                         |                                                                                                                       |
-| secrets.httpd2Key         | yes                                |                         |                                                                                                                       |
-| secrets.server0Crt        | yes                                |                         |                                                                                                                       |
-| secrets.server0Key        | yes                                |                         |                                                                                                                       |
-| secrets.server0Pk         | yes                                |                         |                                                                                                                       |
-| secrets.server0SkB64      | yes                                |                         |                                                                                                                       |
-| secrets.server1Crt        | yes                                |                         |                                                                                                                       |
-| secrets.server1Key        | yes                                |                         |                                                                                                                       |
-| secrets.server1Pk         | yes                                |                         |                                                                                                                       |
-| secrets.server1SkB64      | yes                                |                         |                                                                                                                       |
-| secrets.server2Crt        | yes                                |                         |                                                                                                                       |
-| secrets.server2Key        | yes                                |                         |                                                                                                                       |
-| secrets.server2Pk         | yes                                |                         |                                                                                                                       |
-| secrets.server2SkB64      | yes                                |                         |                                                                                                                       |
-| secrets.webAppPk          | yes                                |                         |                                                                                                                       |
-| secrets.sign0PkB64        | if `core.scriptSignMode`           |                         | (legacy)                                                                                                              |
-| secrets.sign1PkB64        | if `core.scriptSignMode`           |                         | (legacy)                                                                                                              |
-| secrets.sign2PkB64        | if `core.scriptSignMode`           |                         | (legacy)                                                                                                              |
-| secrets.sign0Pk           | if `core.scriptSignMode`           |                         | (legacy)                                                                                                              |
-| secrets.sign1Pk           | if `core.scriptSignMode`           |                         | (legacy)                                                                                                              |
-| secrets.sign2Pk           | if `core.scriptSignMode`           |                         | (legacy)                                                                                                              |
-| vpnEnabled                |                                    | false                   | If true, a VPN client sidecar is created to connect the VDL node to a VPN                                             |
-| vpnLogLevel               | if `vpnEnabled`                    |                         | The verbosity of OpenVPN                                                                                              |
-| vpnConfigFile             | if `vpnEnabled`                    |                         | Content of a .ovpn file, for connecting to an OpenVPN server                                                          |
-| loggingEnabled            | if `vpnEnabled`                    | false                   | if true, a Grafana Alloy sidecar is created to send logs to a Grafana Loki sever                                      |
-| logging.isHost            | if `loggingEnabled` & `vpnEnabled` |                         | Deploys a Grafana Loki server and Grafana dashboard to view aggregated engine logs                                    |
-| logging.lokiEndpoint      | if `loggingEnabled` & `vpnEnabled` |                         | Defines the endpoint that Alloy should write to. When using the VPN this will most likely be `http://192.168.254.103` |
-| logging.node1Namespace    | if `loggingEnabled` & `vpnEnabled` |                         | Allows the deployed dashboard to select the correct logs. Node1 admin should send this info to node0 admin            |
-| logging.node2Namespace    | if `loggingEnabled` & `vpnEnabled` |                         | Allows the deployed dashboard to select the correct logs. Node2 admin should send this info to node0 admin            |
-| podAnnotations            |                                    | {}                      | sets extra pod annotations                                                                                            |
-| securityContext           |                                    | {}                      | sets the securityContext                                                                                              |
-| serviceN2n.type           |                                    | LoadBalancer            | sets the type of the service for node to node communication                                                           |
-| serviceN2n.exposePort     |                                    | 6000                    | sets the port with which other nodes can contact this node                                                            |
-| serviceCrandas.enabled    |                                    | true                    | If true, enables users to connect their Crandas environment to this node                                              |
-| serviceCrandas.type       |                                    | LoadBalancer            | sets the type of the service for connecting with Crandas                                                              |
-| serviceCrandas.exposePort |                                    | 9820                    | sets the port with which Crandas can connect                                                                          |
-| pvc.storageClassName      | yes                                |                         | provide the name or the storace class, cloud dependent                                                                |
-| ingress.enabled           |                                    | false                   | TODO add explanation for the ingress                                                                                  |
-| ingress.className         |                                    | ""                      |                                                                                                                       |
-| annotations               |                                    | {}                      |                                                                                                                       |
-| hosts                     |                                    |                         |                                                                                                                       |
+| Name                      | Required                 | Default                 | Explanation                                                                            |
+| ------------------------- | ------------------------ | ----------------------- | -------------------------------------------------------------------------------------- |
+| image.repository          |                          | ghcr.io/rosemanlabs/vdl | Repository to pull the VDL image from                                                  |
+| image.pullPolicy          |                          | Always                  | sets the pull policiy for all images                                                   |
+| image.tag                 |                          |                         | Overrides the default app version tag                                                  |
+| imageCredentials.name     | yes                      |                         | "name of the credentials used to pull the images                                       |
+| imageCredentials.registry |                          | ghcr.io/rosemanlabs/vdl | Image registry the credentials belong to                                               |
+| imageCredentials.username | yes                      |                         | Username needed for pulling the image                                                  |
+| imageCredentials.password | yes                      |                         | Password or PAT needed for pulling the image                                           |
+| imageCredentials.email    |                          | ""                      | Email belonging to the image credentials                                               |
+| nameOverride              |                          | ""                      | Overrides part of the fully qualified app name with which to reach the node            |
+| fullnameOverride          |                          | ""                      | Overrides the default fully qualified app name with which to reach the node            |
+| core.nodeNR               | yes                      |                         | Number in range \[0, 1, 2\], nodes should be deployed in descending order              |
+| core.peerAHostname        | yes                      | "tbd"                   | Sets the hostname or URL at which peer A should be reachable                           |
+| core.peerBHostname        | yes                      | "tbd"                   | Sets the hostname or URL at which peer B should be reachable                           |
+| core.peerAPort            | yes                      | "6000"                  | Sets the port that peer A has opened for connecting to the others                      |
+| core.peerBPort            | yes                      | "6000"                  | Sets the port that peer B has opened for connecting to the others                      |
+| core.cores                |                          | "1"                     | Number of cores the VDL node can use                                                   |
+| core.memory               |                          | "900M"                  | Number of Bytes of memory the VDL node can use                                         |
+| core.logLevel             |                          | "debug"                 | Sets the log level                                                                     |
+| core.persistenceMode      |                          | "1"                     | If set to "1" or "true", store tables to disk (data survives server reboots)           |
+| core.dynamicConfigMode    |                          | "0"                     | If set to "1" or "true", enable dynamic config mode (required for approvals)           |
+| core.scriptSignMode       |                          | "0"                     | (legacy) If set to "1" or "true", enforces script sign mode                            |
+| core.scriptSignKeys       |                          |                         | (legacy) If core.scriptSignMode has been set, select which keys are used               |
+| secrets.selfsignedcaCrt   | yes                      |                         | The certificate authority used for each of the TLS keys                                |
+| secrets.licenseKey        | yes                      |                         | License key necessary for using the Virtual Data Lake software                         |
+| secrets.httpd0Crt         | yes                      |                         |                                                                                        |
+| secrets.httpd0Key         | yes                      |                         |                                                                                        |
+| secrets.httpd1Crt         | yes                      |                         |                                                                                        |
+| secrets.httpd1Key         | yes                      |                         |                                                                                        |
+| secrets.httpd2Crt         | yes                      |                         |                                                                                        |
+| secrets.httpd2Key         | yes                      |                         |                                                                                        |
+| secrets.server0Crt        | yes                      |                         |                                                                                        |
+| secrets.server0Key        | yes                      |                         |                                                                                        |
+| secrets.server0Pk         | yes                      |                         |                                                                                        |
+| secrets.server0SkB64      | yes                      |                         |                                                                                        |
+| secrets.server1Crt        | yes                      |                         |                                                                                        |
+| secrets.server1Key        | yes                      |                         |                                                                                        |
+| secrets.server1Pk         | yes                      |                         |                                                                                        |
+| secrets.server1SkB64      | yes                      |                         |                                                                                        |
+| secrets.server2Crt        | yes                      |                         |                                                                                        |
+| secrets.server2Key        | yes                      |                         |                                                                                        |
+| secrets.server2Pk         | yes                      |                         |                                                                                        |
+| secrets.server2SkB64      | yes                      |                         |                                                                                        |
+| secrets.webAppPk          | yes                      |                         |                                                                                        |
+| secrets.sign0PkB64        | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign1PkB64        | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign2PkB64        | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign0Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign1Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| secrets.sign2Pk           | if `core.scriptSignMode` |                         | (legacy)                                                                               |
+| vpnEnabled                |                          | false                   | If true, a VPN client sidecar is created to connect the VDL node to a VPN              |
+| vpnLogLevel               | if `vpnEnabled`          |                         | The verbosity of OpenVPN                                                               |
+| vpnConfigFile             | if `vpnEnabled`          |                         | Content of a .ovpn file, for connecting to an OpenVPN server                           |
+| loggingEnabled            |                          | false                   | if true, a FileBeat sidecar is created to send the VDL logs to a Logbeat server        |
+| elasticCloudID            | if `loggingEnabled`      |                         | Sets cloud.id in the filebeat config for connecting to Elastic Cloud                   |
+| elasticCloudAuth          | if `loggingEnabled`      |                         | Sets cloud.auth in the filebeat config for connecting to Elastic Cloud                 |
+| elasticIndex              | if `loggingEnabled`      | "onpremise"             | Sets the index name to which the filebeat will write its logs                          |
+| logstashHost              | if `loggingEnabled`      |                         | Host name/IP (add :port to override default 5044) of the logstash server to connect to |
+| loggingCaCrt              | if `loggingEnabled`      |                         | CA certificate for setting up a self signed TLS tunnel between Logstash and Filebeat   |
+| filebeatCrt               | if `loggingEnabled`      |                         | TLS certificate authenticating Filebeat to the Logstash server                         |
+| filebeatKey               | if `loggingEnabled`      |                         | Secret key belonging to the filebeatCrt certificate                                    |
+| podAnnotations            |                          | {}                      | sets extra pod annotations                                                             |
+| securityContext           |                          | {}                      | sets the securityContext                                                               |
+| serviceN2n.type           |                          | LoadBalancer            | sets the type of the service for node to node communication                            |
+| serviceN2n.exposePort     |                          | 6000                    | sets the port with which other nodes can contact this node                             |
+| serviceCrandas.enabled    |                          | true                    | If true, enables users to connect their Crandas environment to this node               |
+| serviceCrandas.type       |                          | LoadBalancer            | sets the type of the service for connecting with Crandas                               |
+| serviceCrandas.exposePort |                          | 9820                    | sets the port with which Crandas can connect                                           |
+| pvc.storageClassName      | yes                      |                         | provide the name or the storace class, cloud dependent                                 |
+| ingress.enabled           |                          | false                   | TODO add explanation for the ingress                                                   |
+| ingress.className         |                          | ""                      |                                                                                        |
+| annotations               |                          | {}                      |                                                                                        |
+| hosts                     |                          |                         |                                                                                        |
+| externalDns.target        | if externalDns.enabled   |                         | The target IP for the DNS record                                                       |
+| externalDns.host          | if externalDns.enabled   |                         | The hostname for the DNS record                                                        |
 
 # appendix II: values recognized by docker image
 
