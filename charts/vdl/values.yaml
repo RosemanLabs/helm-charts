@@ -156,7 +156,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 externalDns:
-  enabled: true
+  enabled: false
   target: "" # Fill in LoadBalancer or Reverse-Proxy IP in here
   host: "" # Fill in the desired hostname for the DNS record, e.g. vdl-example.rosemancloud.com
 

@@ -22,10 +22,10 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
     {{ if .Values.externalDns.enabled }}
-    external-dns.alpha.kubernetes.io/target: {{ .Values.externalDns.target }}
+    external-dns.alpha.kubernetes.io/target: {{ required "If externalDns.enabled you must include a target in externalDns.target" .Values.externalDns.target }}
     kubernetes.io/ingress.class: {{ .Values.ingress.className }}
     external-dns.alpha.kubernetes.io/ttl: 30
-    external-dns.alpha.kubernetes.io/hostname: {{ .Values.externalDns.host }}
+    external-dns.alpha.kubernetes.io/hostname: {{ required "If externalDns.enabled you must include a host in externalDns.host" .Values.externalDns.host }}
     {{ end }}
   {{- end }}
 spec:
