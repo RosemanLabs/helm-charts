@@ -251,6 +251,17 @@ spec:
             - name: secrets
               mountPath: /app/secrets
       {{- end }}
+        - name: vdl-permissions-setup
+          image: apteno/alpine-jq
+          command:
+            - /bin/sh
+            - '-xc'
+            - 'find /app/config /app/data -path "/app/config/lost+found" -prune -o -path "/app/data/lost+found" -prune -o -exec chown 1000:1000 {} +'
+          volumeMounts:
+            - mountPath: /app/data
+              name: persistence
+            - mountPath: /app/config
+              name: dynamic-config
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
