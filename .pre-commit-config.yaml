@@ -1,0 +1,8 @@
+repos:
+  - repo: https://github.com/RosemanLabs/precommit-pre-commit-hooks
+    rev: 2c9f875913ee60ca25ce70243dc24d5b6415598c # 4.6.0
+    hooks:
+      - id: end-of-file-fixer
+        types_or: [python, shell, yaml]
+      - id: trailing-whitespace
+        types_or: [python, shell, yaml]
