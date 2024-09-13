@@ -29,7 +29,6 @@ core:
   peerAPort: "6000"
   peerBPort: "6000"
   cores: "1"
-  memory: "900M"
   logLevel: "debug"
   persistenceMode: "1"
   dynamicConfigMode: "0"
