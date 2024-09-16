@@ -77,6 +77,9 @@ spec:
             secretName: {{ .Chart.Name }}-secret-vdl
             defaultMode: 420
             optional: false
+        - name: tmp
+          emptyDir:
+            sizeLimit: 20Mi
         {{- if .Values.loggingEnabled }}
         - name: alloy-config
           configMap:
@@ -107,6 +110,8 @@ spec:
               mountPath: /app/config
             - name: secrets
               mountPath: /app/secrets
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: NODE_NR
               value: {{ .Values.core.nodeNr | quote }}
@@ -236,6 +241,8 @@ spec:
               subPath: web_app.pk
             - name: dynamic-config
               mountPath: /config
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
       {{- end }}
       {{- if .Values.healthContainer.enabled }}
         - name: health
