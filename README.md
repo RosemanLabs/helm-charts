@@ -192,3 +192,7 @@ The docker image recognizes the following parameters. Not all of these values ca
 | NODE_HEARTBEAT_TIMEOUT_DELTA |                                                                                                               |
 | NODE_LOG_LEVEL               | Sets the log level \[debug etc.\]                                                                             |
 | NODE_AUX_FLAGS               | utility flag to add any flags not covered by the above                                                        |
+
+# Contributions
+
+Before committing, please install `pre-commit` on your system and run `pre-commit install` in your local repository copy.
