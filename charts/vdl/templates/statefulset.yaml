@@ -45,7 +45,6 @@ spec:
     matchLabels:
       {{- include "vdl.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "vdl.fullname" . }}-n2n
-  # ^ TODO
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -76,6 +75,9 @@ spec:
             secretName: {{ .Chart.Name }}-secret-vdl
             defaultMode: 420
             optional: false
+        - name: tmp
+          emptyDir:
+            sizeLimit: 20Mi
         {{- if .Values.loggingEnabled }}
         - name: alloy-config
           configMap:
@@ -106,6 +108,8 @@ spec:
               mountPath: /app/config
             - name: secrets
               mountPath: /app/secrets
+            - name: tmp
+              mountPath: /tmp
           env:
             - name: NODE_NR
               value: {{ .Values.core.nodeNr | quote }}
@@ -148,6 +152,8 @@ spec:
             # where big numbers (even if they are quoted) are automatically converted
             # to scientific notation. See: https://github.com/helm/helm/issues/1707
               value: {{ .Values.core.maxCacheSize | replace "bytes" "" | quote }}
+            - name: NODE_SECRETS_DIR # per 1.12.3 this setting is the default, but we're configuring it here explicitly for backwards compatability with older images
+              value: /tmp/secrets_run
             - name: NODE_AUX_FLAGS
               value: {{ .Values.core.auxFlags | quote }}
           {{- if not .Values.vpnEnabled }}
@@ -165,8 +171,8 @@ spec:
         {{- if .Values.loggingEnabled }}
         {{- required "A valid VPN setup is required for logging to be enabled" .Values.vpnEnabled }}
         - name: vdl-log-collector
-          image: grafana/alloy:v1.2.1
-          imagePullPolicy: Always
+          image: "{{ .Values.image.logging.repository }}:{{ .Values.image.logging.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - name: alloy-config
               mountPath: /etc/alloy/config.alloy
@@ -180,7 +186,7 @@ spec:
         {{- end }}
         {{- if .Values.vpnEnabled }}
         - name: openvpn-client
-          image: ghcr.io/wfg/openvpn-client:3.1.0
+          image: "{{ .Values.image.vpn.repository }}:{{ .Values.image.vpn.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
             - name: ephemeral
@@ -211,7 +217,8 @@ spec:
       initContainers:
       {{- if .Values.vpnEnabled }}
         - name: vpn-config-setup
-          image: "ghcr.io/rosemanlabs/images/alpine:3.20.1"
+          image: "{{ .Values.image.alpine.repository }}:{{ .Values.image.alpine.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ['sh', '-c', "cp /config/client.ovpn /data/vpn/client.ovpn"]
           volumeMounts:
             - name: vpnconfig
@@ -222,7 +229,8 @@ spec:
       {{- if or (eq .Values.core.dynamicConfigMode "1") (eq .Values.core.dynamicConfigMode "true") }}
         # NOTE: this logic may be moved into the main docker image later on
         - name: vdl-config-setup
-          image: apteno/alpine-jq
+          image: "{{ .Values.image.alpineJq.repository }}:{{ .Values.image.alpineJq.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /bin/sh
             - '-xc'
@@ -233,10 +241,13 @@ spec:
               subPath: web_app.pk
             - name: dynamic-config
               mountPath: /config
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
       {{- end }}
       {{- if .Values.healthContainer.enabled }}
         - name: health
-          image: "{{ .Values.healthContainer.repository }}:{{ .Values.healthContainer.tag }}"
+          image: "{{ .Values.image.health.repository }}:{{ .Values.image.health.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: engine-node-{{ .Values.core.nodeNr }}-envs
@@ -248,6 +259,18 @@ spec:
             - name: secrets
               mountPath: /app/secrets
       {{- end }}
+        - name: vdl-permissions-setup
+          image: "{{ .Values.image.alpineJq.repository }}:{{ .Values.image.alpineJq.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - '-xc'
+            - 'find /app/config /app/data -path "/app/config/lost+found" -prune -o -path "/app/data/lost+found" -prune -o -exec chown 1000:1000 {} +'
+          volumeMounts:
+            - mountPath: /app/data
+              name: persistence
+            - mountPath: /app/config
+              name: dynamic-config
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

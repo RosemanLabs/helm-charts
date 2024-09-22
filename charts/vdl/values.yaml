@@ -7,6 +7,21 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
+  logging:
+    repository: ghcr.io/rosemanlabs/grafana/alloy
+    tag: v1.2.1
+  vpn:
+    repository: ghcr.io/rosemanlabs/openvpn-client
+    tag: 4.0.0
+  alpine:
+    repository: ghcr.io/rosemanlabs/images/alpine
+    tag: 3.20.3
+  alpineJq:
+    repository: ghcr.io/rosemanlabs/images/apteno/alpine-jq
+    tag: 2024-09-15
+  health:
+    repository: ghcr.io/rosemanlabs/engine-healthcontainer
+    tag: v0.1.1
 imageCredentials:
   name: creds-pull
   registry: ghcr.io/rosemanlabs
@@ -16,8 +31,6 @@ imageCredentials:
 
 healthContainer:
   enabled: false
-  repository: ghcr.io/rosemanlabs/engine-healthcontainer
-  tag: "v0.1.1"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -103,16 +116,18 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  fsGroup: 1000
+  fsGroupChangePolicy: Always
 
-securityContext: {}
+securityContext:
   # capabilities:
   #   drop:
   #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
 
 serviceN2n:
   type: LoadBalancer
