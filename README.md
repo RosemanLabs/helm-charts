@@ -167,7 +167,6 @@ The docker image recognizes the following parameters. Not all of these values ca
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | NODE_PORT_OFFSET_MODE        | if set to 1, will add the node number to the port numbers; can be used for single-machine deployments         |
 | NODE_CORES                   | determine the number of cores the node will use; if <= 0, then it will use all available cores                |
-| NODE_MEMORY                  | determine the amount of memory the node will use; if unset, then will use all available memory                | 
 | NODE_BASE_VDL_PORT           |                                                                                                               |
 | NODE_BASE_HTTPS_PORT         |                                                                                                               |
 | NODE_BASE_PROMETHEUS_PORT    |                                                                                                               |
