@@ -3,6 +3,25 @@ entries:
   vdl:
   - apiVersion: v2
     appVersion: v1.12.2
+    created: "2024-09-22T15:00:25.932525698Z"
+    dependencies:
+    - condition: logging.isHost
+      name: loki
+      repository: https://grafana.github.io/helm-charts
+      version: 6.7.3
+    - condition: logging.isHost
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 8.4.0
+    description: A Helm chart for the Roseman Labs Virtual Data Lake
+    digest: b799bd8aa3146ea07e5e6868812ea89aa04a7431f329de387507b323d3f3e0b4
+    name: vdl
+    type: application
+    urls:
+    - https://github.com/RosemanLabs/helm-charts/releases/download/vdl-1.8.0/vdl-1.8.0.tgz
+    version: 1.8.0
+  - apiVersion: v2
+    appVersion: v1.12.2
     created: "2024-07-31T12:37:25.214663437Z"
     description: A Helm chart for the Roseman Labs Virtual Data Lake
     digest: dbfc6c7e47620e9803b49fcc91b2c6b30a3d2503670583926106093addfdd61a
@@ -201,4 +220,4 @@ entries:
     urls:
     - https://github.com/RosemanLabs/helm-charts/releases/download/vdl-0.2.0/vdl-0.2.0.tgz
     version: 0.2.0
-generated: "2024-07-31T12:37:25.214770888Z"
+generated: "2024-09-22T15:00:25.932687338Z"
