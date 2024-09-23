@@ -1,0 +1,11 @@
+name: pre-commit
+
+on: push
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - uses: RosemanLabs/gha-pre-commit@828247764461bc41b2bd267e24d76e91a279b093 # v4.0.0
